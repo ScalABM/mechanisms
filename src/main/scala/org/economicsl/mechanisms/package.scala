@@ -34,6 +34,25 @@ package object mechanisms {
 
   }
 
+
+  /** Type representing "money".
+    *
+    * When modeling individual agent preferences using a `Preference` ordering, we are not modeling "by how much" an
+    * agent prefers one alternative over another. Introducing the concept of "money" provides a yardstick that allows us
+    * to model exactly this idea.  A key property of "money" is that it is capable of acting as a store of value that
+    * can be transferred amongst groups of agents.
+    */
+  type Money = Double
+
+
+  /** Base trait for representing preferences defined over alternatives in terms of each alternative's monetary value. */
+  trait ValuationFunction[A <: Alternative] extends ((A) => Money) with Preference[A] {
+
+    /** The `Ordering` over alternatives of type `A` is determined by comparing the value of each alternative. */
+    def ordering: Ordering[A] = Ordering.by(alternative => apply(alternative))
+
+  }
+
   /** Base trait defining a generic social welfare function.
     *
     * A social welfare function aggregates the preferences of individual agents into a common preference ordering.
