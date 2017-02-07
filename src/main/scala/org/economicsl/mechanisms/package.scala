@@ -45,14 +45,13 @@ package object mechanisms {
   type Money = Double
 
 
-  /** Base trait for representing preferences defined over alternatives in terms of each alternative's monetary value. */
-  trait ValuationFunction[A <: Alternative] extends ((A) => Money) with Preference[A] {
+  /** An alternative that combines another alternative with a monetary payment. */
+  case class Outcome[A <: Alternative](money: Money, alternative: A) extends Alternative
 
-    /** The `Ordering` over alternatives of type `A` is determined by comparing the value of each alternative. */
-    def ordering: Ordering[A] = Ordering.by(alternative => apply(alternative))
 
-  }
-  
+  /** Base trait for defining a function that provides a monetary value for alternative of a particular type. */
+  trait ValuationFunction[A <: Alternative] extends ((A) => Money)
+
 
   /** Base trait defining a generic social welfare function.
     *
