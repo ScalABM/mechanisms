@@ -1,4 +1,4 @@
-name := "mechanism-design"
+name := "mechanisms"
 
 version := "0.1"
 
