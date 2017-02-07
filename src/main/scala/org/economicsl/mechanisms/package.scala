@@ -52,6 +52,7 @@ package object mechanisms {
     def ordering: Ordering[A] = Ordering.by(alternative => apply(alternative))
 
   }
+  
 
   /** Base trait defining a generic social welfare function.
     *
