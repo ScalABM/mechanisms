@@ -15,9 +15,7 @@ limitations under the License.
 */
 package org.economicsl
 
-import java.util.UUID
-
-import scala.collection.{GenMap, GenSet}
+import scala.collection.GenSet
 
 
 package object mechanisms {
@@ -58,14 +56,14 @@ package object mechanisms {
     *
     * A social welfare function aggregates the preferences of individual agents into a common preference ordering.
     */
-  trait SocialWelfareFunction[P <: Preference[_ <: Alternative]] extends ((GenMap[UUID, P]) => P)
+  trait SocialWelfareFunction[P <: Preference[_ <: Alternative]] extends ((GenSet[P]) => P)
 
 
   /** Base trait defining a generic social choice function.
     *
     * A social choice function aggregates the preferences of individual agents into the choice of a single alternative.
     */
-  trait SocialChoiceFunction[A <: Alternative, P <: Preference[A]] extends ((GenSet[A], GenMap[UUID, P]) => A)
+  trait SocialChoiceFunction[A <: Alternative, P <: Preference[A]] extends ((GenSet[P]) => A)
 
 
 }
