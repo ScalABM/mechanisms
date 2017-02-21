@@ -35,6 +35,21 @@ package object mechanisms {
   }
 
 
+  /** Base trait defining a generic social welfare function.
+    *
+    * A social welfare function aggregates the preferences of individual agents into a common preference ordering.
+    */
+  trait SocialWelfareFunction[P <: Preference[_ <: Alternative]] extends ((GenSet[P]) => P)
+
+
+  /** Base trait defining a generic social choice function.
+    *
+    * A social choice function aggregates the preferences of individual agents into the choice of a single alternative.
+    */
+  trait SocialChoiceFunction[A <: Alternative, P <: Preference[A]] extends ((GenSet[A], GenSet[P]) => A)
+
+
+
   /** Type representing "money".
     *
     * When modeling individual agent preferences using a `Preference` ordering, we are not modeling "by how much" an
@@ -49,22 +64,12 @@ package object mechanisms {
   case class Outcome[A <: Alternative](money: Money, alternative: A) extends Alternative
 
 
-  /** Base trait for defining a function that provides a monetary value for alternative of a particular type. */
+  /** Base trait defining a function that provides a monetary value for alternative of a particular type. */
   trait ValuationFunction[A <: Alternative] extends ((A) => Money)
 
 
-  /** Base trait defining a generic social welfare function.
-    *
-    * A social welfare function aggregates the preferences of individual agents into a common preference ordering.
-    */
-  trait SocialWelfareFunction[P <: Preference[_ <: Alternative]] extends ((GenMap[UUID, P]) => P)
-
-
-  /** Base trait defining a generic social choice function.
-    *
-    * A social choice function aggregates the preferences of individual agents into the choice of a single alternative.
-    */
-  trait SocialChoiceFunction[A <: Alternative, P <: Preference[A]] extends ((GenSet[A], GenMap[UUID, P]) => A)
+  /** Base trait defining a function that determines the payment made by a player as a function of the valuation functions of all players. */
+  trait PaymentFunction[A <: Alternative] extends (GenMap[UUID, ValuationFunction[A]] => Money)
 
 
 }
