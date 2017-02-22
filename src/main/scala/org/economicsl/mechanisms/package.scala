@@ -15,7 +15,6 @@ limitations under the License.
 */
 package org.economicsl
 
-
 import scala.collection.GenSet
 
 
