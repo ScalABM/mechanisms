@@ -7,7 +7,8 @@ import collection.{GenMap, GenSet, parallel}
 
 case class Ballot(signature: UUID, alternative: Alternative) extends Preference[Alternative] {
 
-  val ordering: Ordering[Alternative] = Ordering.by(a => if (a == alternative) 1 else 0)
+  // Insures that the head of any sorted collection of alternatives is the preferred alternative!
+  val ordering: Ordering[Alternative] = Ordering.by(a => if (a == alternative) 0 else 1)
 
 }
 
