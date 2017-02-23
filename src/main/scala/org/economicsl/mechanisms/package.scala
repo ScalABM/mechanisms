@@ -50,6 +50,10 @@ package object mechanisms {
     val ordering: Ordering[A] = Ordering.by(alternative => apply(alternative))
 
   }
+   
+  
+  /** Base trait for representing payments made by a player as a function of the valuation functions of all players. */
+  trait PaymentFunction[A <: Alternative] extends (GenSet[ValuationFunction[A]] => Money)
   
 
   /** Base trait defining a generic social welfare function.
