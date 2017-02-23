@@ -44,10 +44,10 @@ package object mechanisms {
 
 
   /** Base trait for representing preferences defined over alternatives in terms of each alternative's monetary value. */
-  trait ValuationFunction[A <: Alternative] extends ((A) => Money) with Preference[A] {
+  trait ValuationFunction[A <: Alternative] extends Preference[A] with ((A) => Money) {
 
     /** The `Ordering` over alternatives of type `A` is determined by comparing the value of each alternative. */
-    def ordering: Ordering[A] = Ordering.by(alternative => apply(alternative))
+    val ordering: Ordering[A] = Ordering.by(alternative => apply(alternative))
 
   }
   
