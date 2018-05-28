@@ -20,17 +20,25 @@ import java.util.UUID
 import scala.collection.{GenMap, GenSet}
 
 
-/** Class representing a Vickrey-Clarke-Groves (VCG) mechanism. */
-class VickreyClarkeGrovesMechanism[A <: Alternative](hs: GenMap[UUID, PaymentFunction[A]]) {
+/** Direct mechanism is a social choice function and a collection of payment functions used to provide incentives to players. */
+trait DirectMechanism[A <: Alternative] extends SocialChoiceFunction[A, ValuationFunction[A]] {
 
-  def apply(alternatives: GenSet[A], valuations: GenMap[UUID, ValuationFunction[A]]): A = {
+  def payments: GenSet[PaymentFunction[A]]
+
+}
+
+
+/** Class representing a Vickrey-Clarke-Groves (VCG) mechanism. */
+class VickreyClarkeGrovesMechanism[A <: Alternative](hs: GenSet[PaymentFunction[A]]) {
+
+  def apply(alternatives: GenSet[A], valuations: GenSet[ValuationFunction[A]]): A = {
     val socialValuation = VickreyClarkeGrovesMechanism.aggregate(valuations)
     alternatives.reduce((a, b) => if (socialValuation(a) < socialValuation(b)) b else a)
   }
 
-  def payments(alternative: A, valuations: GenMap[UUID, ValuationFunction[A]]): GenMap[UUID, Money] = {
+  def payments(alternative: A, valuations: GenSet[ValuationFunction[A]]): GenMap[UUID, Money] = {
     val socialValuation = VickreyClarkeGrovesMechanism.aggregate(valuations)
-    hs.map { case (uuid, h) =>
+    hs.map( h =>
       val valuation = valuations(uuid)
       val otherValuations = valuations - uuid
       val payment = h(otherValuations) - (socialValuation(alternative) - valuation(alternative))
@@ -49,17 +57,17 @@ object VickreyClarkeGrovesMechanism {
 
   def clarkePivotRule[A <: Alternative](alternatives: GenSet[A]): PaymentFunction[A] = {
     new PaymentFunction[A] {
-      def apply(valuations: GenMap[UUID, ValuationFunction[A]]): Money = {
+      def apply(valuations: GenSet[ValuationFunction[A]]): Money = {
         val socialValuation = aggregate(valuations)
         alternatives.aggregate(Double.MinValue)((maxValue, a) => maxValue max socialValuation(a), _ max _)
       }
     }
   }
 
-  def aggregate[A <: Alternative](valuations: GenMap[UUID, ValuationFunction[A]]): ValuationFunction[A] = {
+  def aggregate[A <: Alternative](valuations: GenSet[ValuationFunction[A]]): ValuationFunction[A] = {
     new ValuationFunction[A] {
       def apply(alternative: A): Money = {
-        valuations.aggregate(0.0)({ case (socialValue, (_, v)) => socialValue + v(alternative) }, _ + _)
+        valuations.aggregate(0.0)((socialValue, v) => socialValue + v(alternative), _ + _)
       }
     }
   }

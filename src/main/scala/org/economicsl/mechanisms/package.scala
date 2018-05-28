@@ -15,6 +15,8 @@ limitations under the License.
 */
 package org.economicsl
 
+import java.util.UUID
+
 import scala.collection.GenSet
 
 
@@ -26,6 +28,8 @@ package object mechanisms {
 
   /** Base trait for representing preferences defined over a particular type of `Alternative`. */
   trait Preference[A <: Alternative] {
+
+    def uuid: UUID
 
     /** Formally, preferences are represented as an `Ordering` defined over a type of `Alternative`. */
     def ordering: Ordering[A]
@@ -47,7 +51,6 @@ package object mechanisms {
   trait SocialChoiceFunction[A <: Alternative, P <: Preference[A]] extends ((GenSet[P]) => A)
 
 
-
   /** Type representing "money".
     *
     * When modeling individual agent preferences using a `Preference` ordering, we are not modeling "by how much" an
@@ -63,10 +66,15 @@ package object mechanisms {
 
 
   /** Base trait defining a function that provides a monetary value for alternative of a particular type. */
-  trait ValuationFunction[A <: Alternative] extends ((A) => Money)
+  trait ValuationFunction[A <: Alternative] extends Preference[A] with ((A) => Money) {
+
+    /** Preference ordering is implied by the definition of the valuation function. */
+    val ordering: Ordering[A] = Ordering.by(a => apply(a))
+
+  }
 
 
   /** Base trait defining a function that determines the payment made by a player as a function of the valuation functions of all players. */
-  trait PaymentFunction[A <: Alternative] extends (GenMap[UUID, ValuationFunction[A]] => Money)
+  trait PaymentFunction[A <: Alternative] extends (GenSet[ValuationFunction[A]] => Money)
 
 }
