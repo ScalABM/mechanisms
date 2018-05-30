@@ -15,11 +15,5 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.GenMap
 
-
-package object voting {
-
-  type VoteCounts = GenMap[Alternative, Int]
-
-}
+package object voting

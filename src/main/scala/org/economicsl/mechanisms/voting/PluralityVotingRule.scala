@@ -19,25 +19,15 @@ import org.economicsl.mechanisms.{Alternative, SocialChoiceFunction}
 import scala.collection.GenSet
 
 
-class PluralityVotingRule(initial: VoteCounts)
-  extends SocialChoiceFunction[Alternative, Ballot] {
+class PluralityVotingRule[A <: Alternative]
+  extends SocialChoiceFunction[A, Ballot[A]] {
 
-  def apply[A <: Alternative, P <: Ballot](preferences: GenSet[P]): A = {
-    val results = preferences.aggregate(initial)((counts, ballot) => update(counts, ballot), (m1, m2) => combine(m1, m2))
-    val (winner, _) = results maxBy { case (_, votes) => votes }  // todo explicitly handle ties!
-    winner
-  }
-
-  private[this] def update(current: VoteCounts, ballot: Ballot): VoteCounts = {
-    val votes = current.getOrElse(ballot.alternative, 0)
-    current.updated(ballot.alternative, votes + 1)
-  }
-
-  private[this] def combine(some: VoteCounts, other: VoteCounts): VoteCounts = {
-    some.foldLeft(other){ case (counts, (candidate, votes)) =>
-      val additionalVotes = other.getOrElse(candidate, 0)
-      counts.updated(candidate, votes + additionalVotes)
-    }
+  def apply[A1 <: A, B1 <: Ballot[A1]](preferences: GenSet[B1]): A1 = {
+    val results = preferences.aggregate(VoteCounts.empty[A1])(
+      (counts, ballot) => counts.updated(ballot),
+      (m1, m2) => m1.combine(m2)
+    )
+    results.mostPreferred
   }
 
 }
