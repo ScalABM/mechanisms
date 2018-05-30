@@ -28,9 +28,9 @@ trait Preference[-A <: Alternative] {
   /** Returns an integer whose sign communicates how `a1` compares to `a2`.
     *
     * The result sign has the following meaning:
-    * * negative if `a2` is preferred to `a1`.
-    * * positive if `a1` is weakly preferred to `a2`.
-    * * zero if indifferent between `a1` and `a2`
+    * - negative if `a2` is preferred to `a1`.
+    * - positive if `a1` is weakly preferred to `a2`.
+    * - zero if indifferent between `a1` and `a2`
     */
   def compare[A1 <: A](a1: A1, a2: A1): Int
 
