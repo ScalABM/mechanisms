@@ -25,14 +25,14 @@ package org.economicsl.mechanisms
 trait Preference[-A <: Alternative] {
   self =>
 
-  /** Returns an integer whose sign communicates how `a1` compares to `a2`.
+  /** Return an integer whose sign communicates how `a1` compares to `a2`.
     *
     * The result sign has the following meaning:
     * - negative if `a2` is preferred to `a1`.
     * - positive if `a1` is weakly preferred to `a2`.
     * - zero if indifferent between `a1` and `a2`
     */
-  def compare[A1 <: A](a1: A1, a2: A1): Int
+  def compare(a1: A, a2: A): Int
 
   def ordering[A1 <: A]: Ordering[A1] = {
     new Ordering[A1] {
