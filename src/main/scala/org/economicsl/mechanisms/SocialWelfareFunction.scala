@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.GenSet
+import scala.collection.{GenIterable, GenSet}
 
 
 /** Base trait defining a generic social welfare function.
@@ -23,8 +23,56 @@ import scala.collection.GenSet
   * A social welfare function aggregates the preferences of individual agents
   * into a common preference ordering.
   */
-trait SocialWelfareFunction[-P <: Preference[_ <: Alternative]] {
+trait SocialWelfareFunction[-CC <: GenIterable[P], P <: Preference[_ <: Alternative]]
+  extends (CC => P) {
 
-  def apply[P1 <: P](preferences: GenSet[P1]): P1
+  def apply(preferences: CC): P
+
+}
+
+
+object SocialWelfareFunction {
+
+  def average[A <: Alternative]: SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] = {
+    new SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] {
+      def apply(preferences: GenSet[UtilityFunction[A]]): UtilityFunction[A] = {
+        new UtilityFunction[A] {
+          def apply(a: A): Utility = {
+            val (n, d) = preferences.aggregate((0L, 0))(
+              { case ((total, count), u) => (total + u(a), count + 1) },
+              { case ((n0, d0), (n1, d1)) => (n0 + n1, d0 + d1) }
+            )
+            n / d
+          }
+        }
+      }
+    }
+  }
+
+  /** Rawlsian social welfare function: society should maximize the minimum individual utility. */
+  def min[A <: Alternative]: SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] = {
+    new SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] {
+      def apply(preferences: GenSet[UtilityFunction[A]]): UtilityFunction[A] = {
+        new UtilityFunction[A] {
+          def apply(a: A): Utility = {
+            preferences.aggregate(0L)((min, u) => if (u(a) < min) u(a) else min, _ min _)
+          }
+        }
+      }
+    }
+  }
+
+  /** Benthamite social welfare function: society should maximize the sum of individual utility. */
+  def sum[A <: Alternative]: SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] = {
+    new SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] {
+      def apply(preferences: GenSet[UtilityFunction[A]]): UtilityFunction[A] = {
+        new UtilityFunction[A] {
+          def apply(a: A): Utility = {
+            preferences.aggregate(0L)((total, u) => total + u(a), _ + _)
+          }
+        }
+      }
+    }
+  }
 
 }
