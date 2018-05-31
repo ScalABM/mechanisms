@@ -62,6 +62,19 @@ object SocialWelfareFunction {
     }
   }
 
+  /** Nash bargaining maximizes the produce of individual utitlities. */
+  def product[A <: Alternative]: SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] = {
+    new SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] {
+      def apply(preferences: GenSet[UtilityFunction[A]]): UtilityFunction[A] = {
+        new UtilityFunction[A] {
+          def apply(a: A): Utility = {
+            preferences.aggregate(1L)((acc, u) => acc * u(a), _ * _)
+          }
+        }
+      }
+    }
+  }
+
   /** Benthamite social welfare function: society should maximize the sum of individual utility. */
   def sum[A <: Alternative]: SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] = {
     new SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] {
