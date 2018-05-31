@@ -23,7 +23,7 @@ import scala.collection.{GenIterable, GenSet}
   * A social welfare function aggregates the preferences of individual agents
   * into a common preference ordering.
   */
-trait SocialWelfareFunction[-CC <: GenIterable[P], P <: Preference[_ <: Alternative]]
+trait SocialWelfareFunction[-CC <: GenIterable[P], +P <: Preference[_ <: Alternative]]
   extends (CC => P) {
 
   def apply(preferences: CC): P
