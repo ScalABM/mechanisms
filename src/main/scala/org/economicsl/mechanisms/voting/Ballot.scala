@@ -19,20 +19,20 @@ import java.util.UUID
 import org.economicsl.mechanisms.{Alternative, Preference}
 
 
-case class Ballot[A <: Alternative](signature: UUID, alternative: A)
-  extends Preference[A] {
+case class Ballot(signature: UUID, alternative: Alternative)
+  extends Preference[Alternative] {
 
-  /** Returns an integer whose sign communicates how `a1` compares to `a2`.
+  /** Return an integer whose sign communicates how `a1` compares to `a2`.
     *
     * The result sign has the following meaning:
     * - negative if `a2` is preferred to `a1`.
     * - positive if `a1` is weakly preferred to `a2`.
     * - zero if indifferent between `a1` and `a2`
     */
-  def compare[A1 <: A](a1: A1, a2: A1): Int = {
-    if (a2 == alternative) {
+  def compare(a1: Alternative, a2: Alternative): Int = {
+    if (a1.uuid != alternative.uuid && a2.uuid == alternative.uuid) {
       -1
-    } else if (a1 == alternative) {
+    } else if (a1.uuid == alternative.uuid && a2.uuid != alternative.uuid) {
       1
     } else {
       0

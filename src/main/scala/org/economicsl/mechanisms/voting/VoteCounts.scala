@@ -18,14 +18,14 @@ package org.economicsl.mechanisms.voting
 import org.economicsl.mechanisms.Alternative
 
 
-case class VoteCounts[A <: Alternative](counts: Map[A, Int]) {
+case class VoteCounts(counts: Map[Alternative, Int]) {
 
-  def updated[B <: Ballot[A]](ballot: B): VoteCounts[A] = {
+  def updated(ballot: Ballot): VoteCounts = {
     val votes = counts.getOrElse(ballot.alternative, 0)
     VoteCounts(counts.updated(ballot.alternative, votes + 1))
   }
 
-  def combine(other: VoteCounts[A]): VoteCounts[A] = {
+  def combine(other: VoteCounts): VoteCounts = {
     val results = counts.foldLeft(other.counts){ case (totals, (alternative, votes)) =>
       val additionalVotes = other.counts.getOrElse(alternative, 0)
       totals.updated(alternative, votes + additionalVotes)
@@ -33,7 +33,7 @@ case class VoteCounts[A <: Alternative](counts: Map[A, Int]) {
     VoteCounts(results)
   }
 
-  def mostPreferred: A = {
+  def mostPreferred: Alternative = {
     val (alternative, _) = counts.maxBy{ case (_, votes) => votes }
     alternative
   }
@@ -43,8 +43,8 @@ case class VoteCounts[A <: Alternative](counts: Map[A, Int]) {
 
 object VoteCounts {
 
-  def empty[A <: Alternative]: VoteCounts[A] = {
-    VoteCounts(Map.empty[A, Int])
+  def empty: VoteCounts = {
+    VoteCounts(Map.empty[Alternative, Int])
   }
 
 }

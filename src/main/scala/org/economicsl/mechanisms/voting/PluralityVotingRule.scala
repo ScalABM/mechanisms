@@ -19,11 +19,11 @@ import org.economicsl.mechanisms.{Alternative, SocialChoiceFunction}
 import scala.collection.GenSet
 
 
-class PluralityVotingRule[A <: Alternative]
-  extends SocialChoiceFunction[A, Ballot[A]] {
+trait PluralityVotingRule
+  extends SocialChoiceFunction[GenSet[Ballot], Alternative] {
 
-  def apply[A1 <: A, B1 <: Ballot[A1]](preferences: GenSet[B1]): A1 = {
-    val results = preferences.aggregate(VoteCounts.empty[A1])(
+  def apply(preferences: GenSet[Ballot]): Alternative = {
+    val results = preferences.aggregate(VoteCounts.empty)(
       (counts, ballot) => counts.updated(ballot),
       (m1, m2) => m1.combine(m2)
     )
