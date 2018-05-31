@@ -18,9 +18,6 @@ package org.economicsl
 
 package object mechanisms {
 
-  /** Type representing various alternative outcomes. */
-  type Alternative
-
   /** Type representing "money".
     *
     * When modeling individual agent preferences using a `Preference` ordering,
@@ -31,5 +28,8 @@ package object mechanisms {
     * groups of agents.
     */
   type Numeraire = Long
+
+  /** Type representing "utility". */
+  type Utility = Long
 
 }
