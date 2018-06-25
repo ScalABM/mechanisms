@@ -23,7 +23,7 @@ import scala.collection.GenIterable
   * A social choice function aggregates a collection of preferences and returns
   * a single alternative.
   */
-trait SocialChoiceFunction[-CC <: GenIterable[_ <: Preference[A]], A <: Alternative]
+trait SocialChoiceFunction[-CC <: GenIterable[_ >: Preference[A]], +A <: Alternative]
   extends (CC => A) {
 
   def apply(preferences: CC): A
