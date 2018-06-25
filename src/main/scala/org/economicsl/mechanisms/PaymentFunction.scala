@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.GenSet
+import scala.collection.GenIterable
 
 
 /** Base trait for representing payments made by a player as a function of the
@@ -23,6 +23,6 @@ import scala.collection.GenSet
   */
 trait PaymentFunction[-A <: Alternative] {
 
-  def apply[A1 <: A](valuations: GenSet[ValuationFunction[A1]]): Numeraire
+  def apply[A1 <: A](valuations: GenIterable[ValuationFunction[A1]]): Numeraire
 
 }

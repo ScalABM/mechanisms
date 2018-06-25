@@ -17,26 +17,19 @@ package org.economicsl.mechanisms
 
 import java.util.UUID
 
-import scala.collection.{GenMap, GenSet}
-
-
-/** Direct mechanism is a social choice function and a collection of payment functions used to provide incentives to players. */
-trait DirectMechanism[A <: Alternative] extends SocialChoiceFunction[A, ValuationFunction[A]] {
-
-  def payments: GenSet[PaymentFunction[A]]
-
-}
+import scala.collection.{GenIterable, GenMap, GenSet}
 
 
 /** Class representing a Vickrey-Clarke-Groves (VCG) mechanism. */
-class VickreyClarkeGrovesMechanism[A <: Alternative](hs: GenSet[PaymentFunction[A]]) {
+class VickreyClarkeGrovesMechanism[+A <: Alternative](hs: GenSet[PaymentFunction[A]])
+  extends SocialChoiceFunction[GenIterable[ValuationFunction[A]], A]{
 
   def apply(alternatives: GenSet[A], valuations: GenSet[ValuationFunction[A]]): A = {
     val socialValuation = VickreyClarkeGrovesMechanism.aggregate(valuations)
     alternatives.reduce((a, b) => if (socialValuation(a) < socialValuation(b)) b else a)
   }
 
-  def payments(alternative: A, valuations: GenSet[ValuationFunction[A]]): GenMap[UUID, Money] = {
+  def payments(alternative: A, valuations: GenSet[ValuationFunction[A]]): GenMap[UUID, Numeraire] = {
     val socialValuation = VickreyClarkeGrovesMechanism.aggregate(valuations)
     hs.map( h =>
       val valuation = valuations(uuid)
@@ -57,7 +50,7 @@ object VickreyClarkeGrovesMechanism {
 
   def clarkePivotRule[A <: Alternative](alternatives: GenSet[A]): PaymentFunction[A] = {
     new PaymentFunction[A] {
-      def apply(valuations: GenSet[ValuationFunction[A]]): Money = {
+      def apply(valuations: GenSet[ValuationFunction[A]]): Numeraire = {
         val socialValuation = aggregate(valuations)
         alternatives.aggregate(Double.MinValue)((maxValue, a) => maxValue max socialValuation(a), _ max _)
       }
@@ -66,11 +59,10 @@ object VickreyClarkeGrovesMechanism {
 
   def aggregate[A <: Alternative](valuations: GenSet[ValuationFunction[A]]): ValuationFunction[A] = {
     new ValuationFunction[A] {
-      def apply(alternative: A): Money = {
+      def apply(alternative: A): Numeraire = {
         valuations.aggregate(0.0)((socialValue, v) => socialValue + v(alternative), _ + _)
       }
     }
   }
 
 }
-
