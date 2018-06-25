@@ -1,5 +1,5 @@
 /*
-Copyright 2017 EconomicSL
+Copyright 2017-2018 EconomicSL
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 */
 package org.economicsl
 
+<<<<<<< HEAD
 import java.util.UUID
 
 import scala.collection.GenSet
@@ -76,5 +77,23 @@ package object mechanisms {
 
   /** Base trait defining a function that determines the payment made by a player as a function of the valuation functions of all players. */
   trait PaymentFunction[A <: Alternative] extends (GenSet[ValuationFunction[A]] => Money)
+=======
+
+package object mechanisms {
+
+  /** Type representing "money".
+    *
+    * When modeling individual agent preferences using a `Preference` ordering,
+    * we are not modeling "by how much" an agent prefers one alternative over
+    * another. Introducing the concept of "money" provides a yardstick that allows us
+    * to model exactly this idea.  A key property of "money" is that it is
+    * capable of acting as a store of value that can be transferred amongst
+    * groups of agents.
+    */
+  type Numeraire = Long
+
+  /** Type representing "utility". */
+  type Utility = Long
+>>>>>>> master
 
 }
