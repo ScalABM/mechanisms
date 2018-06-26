@@ -21,20 +21,22 @@ import scala.collection.{GenIterable, GenMap, GenSet}
 
 
 /** Class representing a Vickrey-Clarke-Groves (VCG) mechanism. */
-class VickreyClarkeGrovesMechanism[+A <: Alternative](hs: GenSet[PaymentFunction[A]])
-  extends SocialChoiceFunction[GenIterable[ValuationFunction[A]], A]{
+class VickreyClarkeGrovesMechanism[A <: Alternative](
+  alternatives: GenSet[A],
+  hs: GenMap[UUID, PaymentFunction[GenIterable[ValuationFunction[A]]]])
+    extends SocialChoiceFunction[GenIterable[ValuationFunction[A]], A]{
 
-  def apply(alternatives: GenSet[A], valuations: GenSet[ValuationFunction[A]]): A = {
-    val socialValuation = VickreyClarkeGrovesMechanism.aggregate(valuations)
+  def apply(preferences: GenIterable[ValuationFunction[A]]): A = {
+    val socialValuation = VickreyClarkeGrovesMechanism.aggregate(preferences)
     alternatives.reduce((a, b) => if (socialValuation(a) < socialValuation(b)) b else a)
   }
 
-  def payments(alternative: A, valuations: GenSet[ValuationFunction[A]]): GenMap[UUID, Numeraire] = {
-    val socialValuation = VickreyClarkeGrovesMechanism.aggregate(valuations)
-    hs.map( h =>
+  def payments(alternative: A, valuations: GenMap[UUID, ValuationFunction[A]]): GenMap[UUID, Numeraire] = {
+    val socialValuation = VickreyClarkeGrovesMechanism.aggregate(valuations.values)
+    hs.map { case (uuid, h) =>
       val valuation = valuations(uuid)
       val otherValuations = valuations - uuid
-      val payment = h(otherValuations) - (socialValuation(alternative) - valuation(alternative))
+      val payment = h(otherValuations.values) - (socialValuation(alternative) - valuation(alternative))
       (uuid, payment)
     }
   }
@@ -44,23 +46,29 @@ class VickreyClarkeGrovesMechanism[+A <: Alternative](hs: GenSet[PaymentFunction
 
 object VickreyClarkeGrovesMechanism {
 
-  def apply[A <: Alternative](hs: GenMap[UUID, PaymentFunction[A]]): VickreyClarkeGrovesMechanism[A] = {
-    new VickreyClarkeGrovesMechanism(hs)
+  def apply[A <: Alternative]
+           (alternatives: GenSet[A], hs: GenMap[UUID, PaymentFunction[GenIterable[ValuationFunction[A]]]])
+           : VickreyClarkeGrovesMechanism[A] = {
+    new VickreyClarkeGrovesMechanism(alternatives, hs)
   }
 
-  def clarkePivotRule[A <: Alternative](alternatives: GenSet[A]): PaymentFunction[A] = {
-    new PaymentFunction[A] {
-      def apply(valuations: GenSet[ValuationFunction[A]]): Numeraire = {
+  def clarkePivotRule[A <: Alternative]
+                     (alternatives: GenSet[A])
+                     : PaymentFunction[GenIterable[ValuationFunction[A]]] = {
+    new PaymentFunction[GenIterable[ValuationFunction[A]]] {
+      def apply(valuations: GenIterable[ValuationFunction[A]]): Numeraire = {
         val socialValuation = aggregate(valuations)
-        alternatives.aggregate(Double.MinValue)((maxValue, a) => maxValue max socialValuation(a), _ max _)
+        alternatives.aggregate(Long.MinValue)((maxValue, a) => maxValue max socialValuation(a), _ max _)
       }
     }
   }
 
-  def aggregate[A <: Alternative](valuations: GenSet[ValuationFunction[A]]): ValuationFunction[A] = {
+  def aggregate[A <: Alternative]
+               (preferences: GenIterable[ValuationFunction[A]])
+               : ValuationFunction[A] = {
     new ValuationFunction[A] {
       def apply(alternative: A): Numeraire = {
-        valuations.aggregate(0.0)((socialValue, v) => socialValue + v(alternative), _ + _)
+        preferences.aggregate(0L)((socialValue, v) => socialValue + v(alternative), _ + _)
       }
     }
   }

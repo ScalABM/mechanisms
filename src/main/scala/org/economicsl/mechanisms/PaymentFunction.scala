@@ -21,8 +21,9 @@ import scala.collection.GenIterable
 /** Base trait for representing payments made by a player as a function of the
   * valuation functions of all players.
   */
-trait PaymentFunction[-A <: Alternative] {
+trait PaymentFunction[-CC <: GenIterable[ValuationFunction[_ <: Alternative]]]
+  extends (CC => Numeraire) {
 
-  def apply[A1 <: A](valuations: GenIterable[ValuationFunction[A1]]): Numeraire
+  def apply(valuations: CC): Numeraire
 
 }
