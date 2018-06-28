@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.GenIterable
+import scala.collection.{GenIterable, GenSet}
 
 
 /** Base trait defining a generic social choice function.
@@ -23,8 +23,10 @@ import scala.collection.GenIterable
   * A social choice function aggregates a collection of preferences and returns
   * a single alternative.
   */
-trait SocialChoiceFunction[-CC <: GenIterable[_ >: Preference[A]], +A <: Alternative]
+trait SocialChoiceFunction[-CC <: GenIterable[_ >: Preference[A]], A <: Alternative]
   extends (CC => A) {
+
+  def alternatives: GenSet[A]
 
   def apply(preferences: CC): A
 

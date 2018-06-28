@@ -15,16 +15,10 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.GenSeq
-
-
 /** A Direct Revelation Mechanism combines a social choice function` with a
   * collection of payment functions.
   * @note See definition 9.14 from ''Algorithmic Game Theory'' for details.
   */
-trait DirectRevelationMechanism[-CC1 <: GenSeq[ValuationFunction[A]],
-                                -CC2 <: GenSeq[PaymentFunction[CC1]],
-                                A <: Alternative,
-                                CC3 <: GenSeq[Numeraire]]
-  extends SocialChoiceFunction[CC1, A]
-  with Function2[CC1, CC2, (A, CC3)]
+trait DirectRevelationMechanism[A <: Alternative]
+  extends SocialChoiceFunction[ValuationFunctions[A], A]
+  with Function2[ValuationFunctions[A], PaymentFunctions[A], (A, Payments)]
