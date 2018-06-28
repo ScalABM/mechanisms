@@ -15,19 +15,16 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.GenIterable
+import scala.collection.GenSeq
 
 
-/** Base trait defining a generic social choice function.
-  *
-  * A social choice function aggregates a collection of preferences and returns
-  * a single alternative.
+/** A Direct Revelation Mechanism combines a social choice function` with a
+  * collection of payment functions.
+  * @note See definition 9.14 from ''Algorithmic Game Theory'' for details.
   */
-trait SocialChoiceFunction[-CC <: GenIterable[_ >: Preference[A]], +A <: Alternative]
-  extends (CC => A) {
-
-  def apply(preferences: CC): A
-
-  def extend: SocialWelfareFunction[CC, _ >: Preference[A]]
-
-}
+trait DirectRevelationMechanism[-CC1 <: GenSeq[ValuationFunction[A]],
+                                -CC2 <: GenSeq[PaymentFunction[CC1]],
+                                A <: Alternative,
+                                CC3 <: GenSeq[Numeraire]]
+  extends SocialChoiceFunction[CC1, A]
+  with Function2[CC1, CC2, (A, CC3)]
