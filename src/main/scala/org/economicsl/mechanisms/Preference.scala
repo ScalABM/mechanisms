@@ -15,14 +15,14 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
+import cats.Contravariant
+
 
 /** Base trait representing an agent's preferences defined over a particular
   * type of `Alternative`.
-  * @tparam A the sub-type of `Alternative` over which the preferences should be
-  *         defined. Note that `Preference` is contra-variant in the type
-  *         parameter.
+  * @tparam A
   */
-trait Preference[-A <: Alternative] {
+trait Preference[-A] {
   self =>
 
   /** Return an integer whose sign communicates how `a1` compares to `a2`.
@@ -47,4 +47,20 @@ trait Preference[-A <: Alternative] {
     if (compare(a1, a2) >= 0) a1 else a2
   }
 
+}
+
+
+object Preference {
+
+  implicit val contravariant: Contravariant[Preference] = {
+    new Contravariant[Preference] {
+      def contramap[A, B](fa: Preference[A])(f: B => A): Preference[B] = {
+        new Preference[B] {
+          def compare(b1: B, b2: B): Int = {
+            fa.compare(f(b1), f(b2))
+          }
+        }
+      }
+    }
+  }
 }

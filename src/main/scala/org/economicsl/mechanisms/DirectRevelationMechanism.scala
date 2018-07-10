@@ -20,5 +20,8 @@ package org.economicsl.mechanisms
   * @note See definition 9.14 from ''Algorithmic Game Theory'' for details.
   */
 trait DirectRevelationMechanism[A <: Alternative]
-  extends SocialChoiceFunction[ValuationFunctions[A], A]
-  with Function2[ValuationFunctions[A], PaymentFunctions[A], (A, Payments)]
+  extends SocialChoiceFunction[ValuationFunctions[A], A] {
+
+  def apply(paymentFunctions: PaymentFunctions[A])(preferences: ValuationFunctions[A]): (A, Payments)
+
+}

@@ -15,9 +15,11 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
+import scala.collection.GenSet
+
 
 /** trait representing a Vickrey-Clarke-Groves (VCG) mechanism. */
-trait VickreyClarkeGrovesMechanism[A <: Alternative]
+abstract class VickreyClarkeGrovesMechanism[A <: Alternative](alternatives: GenSet[A])
   extends DirectRevelationMechanism[A] {
 
     def apply(preferences: ValuationFunctions[A]): A = {
@@ -47,4 +49,12 @@ trait VickreyClarkeGrovesMechanism[A <: Alternative]
       }
     }
 
+  }
+
+
+  object VickreyClarkeGrovesMechanism {
+
+    def apply[A <: Alternative](alternatives: GenSet[A]): VickreyClarkeGrovesMechanism[A] = {
+      ???
+    }
   }

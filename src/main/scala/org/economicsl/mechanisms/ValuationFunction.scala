@@ -15,11 +15,12 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
+import cats.Contravariant
 
 /** Base trait for representing preferences defined over alternatives in terms
   * of each alternative's monetary value.
   */
-trait ValuationFunction[-A <: Alternative]
+trait ValuationFunction[-A]
   extends Preference[A] with ((A) => Numeraire) {
 
   def compare(a1: A, a2: A): Int = {
@@ -28,6 +29,23 @@ trait ValuationFunction[-A <: Alternative]
 
   override def ordering[A1 <: A]: Ordering[A1] = {
     Ordering.by[A1, Numeraire](alternative => apply(alternative))
+  }
+
+}
+
+
+object ValuationFunction {
+
+  implicit val contravariant: Contravariant[ValuationFunction] = {
+    new Contravariant[ValuationFunction] {
+      def contramap[A, B](fa: ValuationFunction[A])(f: B => A): ValuationFunction[B] = {
+        new ValuationFunction[B] {
+          def apply(alternative: B): Numeraire = {
+            fa(f(alternative))
+          }
+        }
+      }
+    }
   }
 
 }

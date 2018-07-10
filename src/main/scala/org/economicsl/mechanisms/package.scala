@@ -40,7 +40,4 @@ package object mechanisms {
   /** Type representing an indexed sequence of valuation functions. */
   type ValuationFunctions[A <: Alternative] = GenSeq[ValuationFunction[A]]
 
-  /** Type representing "utility". */
-  type Utility = Long
-
 }

@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.{GenIterable, GenSet}
+import scala.collection.{GenIterable, GenSeq, GenSet}
 
 
 /** Base trait defining a generic social choice function.
@@ -26,10 +26,30 @@ import scala.collection.{GenIterable, GenSet}
 trait SocialChoiceFunction[-CC <: GenIterable[_ >: Preference[A]], A <: Alternative]
   extends (CC => A) {
 
-  def alternatives: GenSet[A]
-
   def apply(preferences: CC): A
 
   def extend: SocialWelfareFunction[CC, _ >: Preference[A]]
+
+}
+
+
+object SocialChoiceFunction {
+
+  def dictator[A <: Alternative, P <: Preference[A]]
+              (i: Int)(alternatives: GenSet[A])
+              : SocialChoiceFunction[GenSeq[P], A] = {
+    new SocialChoiceFunction[GenSeq[P], A] {
+      def apply(preferences: GenSeq[P]): A = {
+        alternatives.max(preferences(i).ordering)
+      }
+      def extend: SocialWelfareFunction[GenSeq[P], P] = {
+        new SocialWelfareFunction[GenSeq[P], P] {
+          def apply(preferences: GenSeq[P]): P = {
+            preferences(i)
+          }
+        }
+      }
+    }
+  }
 
 }
