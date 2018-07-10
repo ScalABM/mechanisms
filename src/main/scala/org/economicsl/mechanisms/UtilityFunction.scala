@@ -20,11 +20,7 @@ trait UtilityFunction[-A <: Alternative]
   extends Preference[A] with ((A) => Utility) {
 
   def compare(a1: A, a2: A): Int = {
-    ordering.compare(a1, a2)
-  }
-
-  override def ordering[A1 <: A]: Ordering[A1] = {
-    Ordering.by[A1, Utility](alternative => apply(alternative))
+    apply(a1).compare(apply(a2))
   }
 
 }
