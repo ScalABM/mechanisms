@@ -15,73 +15,55 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.{GenIterable, GenSet}
-
+import cats._
+import cats.implicits._
 
 /** Base trait defining a generic social welfare function.
   *
   * A social welfare function aggregates the preferences of individual agents
   * into a common preference ordering.
   */
-trait SocialWelfareFunction[-CC <: GenIterable[P], +P <: Preference[_ <: Alternative]]
-  extends (CC => P) {
-
-  def apply(preferences: CC): P
-
-}
+trait SocialWelfareFunction[-CC <: Iterable[P], +P <: Preference[A], A]
+  extends (CC => P)
 
 
+/** Companion object for the `SocialWelFareFunction` trait. */
 object SocialWelfareFunction {
 
-  def average[A <: Alternative]: SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] = {
-    new SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] {
-      def apply(preferences: GenSet[UtilityFunction[A]]): UtilityFunction[A] = {
-        new UtilityFunction[A] {
-          def apply(a: A): Utility = {
-            val (n, d) = preferences.aggregate((0L, 0))(
-              { case ((total, count), u) => (total + u(a), count + 1) },
-              { case ((n0, d0), (n1, d1)) => (n0 + n1, d0 + d1) }
-            )
-            n / d
+  val vectorInvariant: Invariant[({ type F[A] = SocialWelfareFunction[Vector[Preference[A]], Preference[A], A] })#F] = {
+    invariant[Vector]
+  }
+
+  val setInvariant: Invariant[({ type F[A] = SocialWelfareFunction[Set[Preference[A]], Preference[A], A] })#F] = {
+    new Invariant[({ type F[A] = SocialWelfareFunction[Set[Preference[A]], Preference[A], A] })#F] {
+      def imap[A, B](fa: SocialWelfareFunction[Set[Preference[A]], Preference[A], A])(f: A => B)(g: B => A): SocialWelfareFunction[Set[Preference[B]], Preference[B], B] = {
+        new SocialWelfareFunction[Set[Preference[B]], Preference[B], B] {
+          def apply(preferences: Set[Preference[B]]): Preference[B] = {
+            fa(preferences.map(pb => pb.contramap(f))).contramap(g)
           }
         }
       }
     }
   }
 
-  /** Rawlsian social welfare function: society should maximize the minimum individual utility. */
-  def min[A <: Alternative]: SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] = {
-    new SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] {
-      def apply(preferences: GenSet[UtilityFunction[A]]): UtilityFunction[A] = {
-        new UtilityFunction[A] {
-          def apply(a: A): Utility = {
-            preferences.aggregate(0L)((min, u) => if (u(a) < min) u(a) else min, _ min _)
+  val seqInvariant: Invariant[({ type F[A] = SocialWelfareFunction[Seq[Preference[A]], Preference[A], A] })#F] = {
+    new Invariant[({ type F[A] = SocialWelfareFunction[Seq[Preference[A]], Preference[A], A] })#F] {
+      def imap[A, B](fa: SocialWelfareFunction[Seq[Preference[A]], Preference[A], A])(f: A => B)(g: B => A): SocialWelfareFunction[Seq[Preference[B]], Preference[B], B] = {
+        new SocialWelfareFunction[Seq[Preference[B]], Preference[B], B] {
+          def apply(preferences: Seq[Preference[B]]): Preference[B] = {
+            fa(preferences.map(pb => pb.contramap(f))).contramap(g)
           }
         }
       }
     }
   }
 
-  /** Nash bargaining maximizes the produce of individual utitlities. */
-  def product[A <: Alternative]: SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] = {
-    new SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] {
-      def apply(preferences: GenSet[UtilityFunction[A]]): UtilityFunction[A] = {
-        new UtilityFunction[A] {
-          def apply(a: A): Utility = {
-            preferences.aggregate(1L)((acc, u) => acc * u(a), _ * _)
-          }
-        }
-      }
-    }
-  }
-
-  /** Benthamite social welfare function: society should maximize the sum of individual utility. */
-  def sum[A <: Alternative]: SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] = {
-    new SocialWelfareFunction[GenSet[UtilityFunction[A]], UtilityFunction[A]] {
-      def apply(preferences: GenSet[UtilityFunction[A]]): UtilityFunction[A] = {
-        new UtilityFunction[A] {
-          def apply(a: A): Utility = {
-            preferences.aggregate(0L)((total, u) => total + u(a), _ + _)
+  def invariant[C[X] <: Iterable[X] : Functor]: Invariant[({ type F[A] = SocialWelfareFunction[C[Preference[A]], Preference[A], A] })#F] = {
+    new Invariant[({ type F[A] = SocialWelfareFunction[C[Preference[A]], Preference[A], A] })#F] {
+      def imap[A, B](fa: SocialWelfareFunction[C[Preference[A]], Preference[A], A])(f: A => B)(g: B => A): SocialWelfareFunction[C[Preference[B]], Preference[B], B] = {
+        new SocialWelfareFunction[C[Preference[B]], Preference[B], B] {
+          def apply(preferences: C[Preference[B]]): Preference[B] = {
+            fa(Functor[C].map(preferences)(pb => pb.contramap(f))).contramap(g)
           }
         }
       }
