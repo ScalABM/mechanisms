@@ -15,6 +15,9 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
+import cats._
+import cats.implicits._
+
 
 /** Base trait for representing preferences defined over alternatives in terms
   * of each alternative's monetary value.
@@ -26,4 +29,39 @@ trait ValuationFunction[-A]
     apply(a1).compare(apply(a2))
   }
 
+}
+
+
+object ValuationFunction {
+
+  def min[A]: Monoid[ValuationFunction[A]] = {
+    makeMonoid(0L, _ min _)
+  }
+
+  def prod[A]: Monoid[ValuationFunction[A]] = {
+    makeMonoid(1L, _ * _)
+  }
+
+  def sum[A]: Monoid[ValuationFunction[A]] = {
+    makeMonoid(0L, _ + _)
+  }
+
+  private def makeMonoid[A](id: Numeraire, op: (Numeraire, Numeraire) => Numeraire) = {
+    new Monoid[ValuationFunction[A]] {
+      def combine(v1: ValuationFunction[A], v2: ValuationFunction[A]): ValuationFunction[A] = {
+        new ValuationFunction[A] {
+          def apply(a: A): Numeraire = {
+            op(v1(a), v2(a))
+          }
+        }
+      }
+      def empty: ValuationFunction[A] = {
+        new ValuationFunction[A] {
+          def apply(a: A): Numeraire = {
+            id
+          }
+        }
+      }
+    }
+  }
 }
