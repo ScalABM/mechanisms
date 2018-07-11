@@ -15,8 +15,6 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import cats._
-import cats.implicits._
 
 /** Base trait defining a generic social welfare function.
   *

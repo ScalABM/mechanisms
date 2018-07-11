@@ -15,10 +15,8 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import cats.instances.int._
-import cats.instances.long._
-import cats.instances.tuple._
-import cats.syntax.semigroup._
+import cats._
+import implicits._
 
 
 /** Base trait defining a generic cardinal welfare function.
@@ -56,21 +54,21 @@ object CardinalSocialWelfareFunction {
       def apply(preferences: CC): ValuationFunction[A] = {
         new ValuationFunction[A] {
           def apply(a: A): Numeraire = {
-            preferences.map(v => v(a)).reduce(_ min _)
+            preferences.reduce(ValuationFunction.min[A].combine)(a)
           }
         }
       }
     }
   }
 
-  /** Nash bargaining maximizes the produce of individual utitlities. */
+  /** Nash bargaining maximizes the produce of individual utilities. */
   def product[CC <: Iterable[ValuationFunction[A]], A]
              : CardinalSocialWelfareFunction[CC, A] = {
     new CardinalSocialWelfareFunction[CC, A] {
       def apply(preferences: CC): ValuationFunction[A] = {
         new ValuationFunction[A] {
           def apply(a: A): Numeraire = {
-            preferences.map(v => v(a)).reduce(_ * _)
+            preferences.reduce(ValuationFunction.prod[A].combine)(a)
           }
         }
       }
@@ -84,7 +82,7 @@ object CardinalSocialWelfareFunction {
       def apply(preferences: CC): ValuationFunction[A] = {
         new ValuationFunction[A] {
           def apply(a: A): Numeraire = {
-            preferences.map(v => v(a)).reduce(_ + _)
+            preferences.reduce(ValuationFunction.sum[A].combine)(a)
           }
         }
       }
