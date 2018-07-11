@@ -16,13 +16,12 @@ limitations under the License.
 package org.economicsl.mechanisms.voting
 
 import org.economicsl.mechanisms.{Alternative, SocialChoiceFunction}
-import scala.collection.GenIterable
 
 
 trait PluralityVotingRule
-  extends SocialChoiceFunction[GenIterable[Ballot], Alternative] {
+  extends SocialChoiceFunction[Iterable[Ballot], Iterable[Alternative], Alternative] {
 
-  def apply(preferences: GenIterable[Ballot]): Alternative = {
+  def apply(preferences: Iterable[Ballot]): Alternative = {
     val results = preferences.aggregate(VoteCounts.empty)(
       (counts, ballot) => counts.updated(ballot),
       (m1, m2) => m1.combine(m2)
