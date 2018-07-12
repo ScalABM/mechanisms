@@ -16,6 +16,14 @@ limitations under the License.
 package org.economicsl.mechanisms
 
 import cats.Contravariant
+<<<<<<< HEAD
+=======
+import cats.instances.map._
+import cats.instances.int._
+import cats.syntax.semigroup._
+
+import scala.collection.immutable.TreeSet
+>>>>>>> master
 
 
 /** Base trait representing an agent's preferences defined over a particular
@@ -34,7 +42,7 @@ trait Preference[-A] {
     */
   def compare(a1: A, a2: A): Int
 
-  def ordering[A1 <: A]: Ordering[A1] = {
+  final def ordering[A1 <: A]: Ordering[A1] = {
     new Ordering[A1] {
       def compare(a1: A1, a2: A1): Int = {
         self.compare(a1, a2)
@@ -42,8 +50,17 @@ trait Preference[-A] {
     }
   }
 
+  final def mostPreferred[A1 <: A](alternatives: Iterable[A1]) = {
+    alternatives.max(ordering)
+  }
+
+  final def rank[A1 <: A](alternatives: Iterable[A1]): Map[A1, Int] = {
+    val sortedAlternatives = TreeSet.empty[A1](ordering) ++ alternatives
+    sortedAlternatives.zipWithIndex.aggregate(Map.empty[A1, Int])(_ + _, _ |+| _)
+  }
+
   /** Return `a1` if `a1` is weakly preferred to `a2`; otherwise `a2`. */
-  def prefers[A1 <: A](a1: A1, a2: A1): A1 = {
+  final def weaklyPrefers[A1 <: A](a1: A1, a2: A1): A1 = {
     if (compare(a1, a2) >= 0) a1 else a2
   }
 
@@ -63,4 +80,23 @@ object Preference {
       }
     }
   }
+<<<<<<< HEAD
+=======
+
+  /** Defines a preference for a particular alternative. */
+  def particular[A](alternative: A): Preference[A] = {
+    new Preference[A] {
+      def compare(a1: A, a2: A): Int = {
+        if ((a1 != alternative) & (a2 == alternative)) {
+          -1
+        } else if ((a1 == alternative) & (a2 != alternative)) {
+          1
+        } else {
+          0
+        }
+      }
+    }
+  }
+
+>>>>>>> master
 }

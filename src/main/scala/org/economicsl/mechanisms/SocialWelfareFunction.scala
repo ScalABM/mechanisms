@@ -15,13 +15,20 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
+<<<<<<< HEAD
 import scala.collection.GenIterable
 
+=======
+>>>>>>> master
 
 /** Base trait defining a generic social welfare function.
   *
   * A social welfare function aggregates the preferences of individual agents
   * into a common preference ordering.
   */
+<<<<<<< HEAD
 trait SocialWelfareFunction[-CC <: GenIterable[P], +P <: Preference[_ <: Alternative]]
+=======
+trait SocialWelfareFunction[-CC <: Iterable[P], +P <: Preference[A], A]
+>>>>>>> master
   extends (CC => P)

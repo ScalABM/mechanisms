@@ -15,7 +15,13 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
+<<<<<<< HEAD
 import cats.Contravariant
+=======
+import cats._
+import cats.implicits._
+
+>>>>>>> master
 
 /** Base trait for representing preferences defined over alternatives in terms
   * of each alternative's monetary value.
@@ -24,13 +30,44 @@ trait ValuationFunction[-A]
   extends Preference[A] with ((A) => Numeraire) {
 
   def compare(a1: A, a2: A): Int = {
-    ordering.compare(a1, a2)
+    apply(a1).compare(apply(a2))
   }
 
-  override def ordering[A1 <: A]: Ordering[A1] = {
-    Ordering.by[A1, Numeraire](alternative => apply(alternative))
+}
+
+
+object ValuationFunction {
+
+  def min[A]: Monoid[ValuationFunction[A]] = {
+    makeMonoid(0L, _ min _)
   }
 
+  def prod[A]: Monoid[ValuationFunction[A]] = {
+    makeMonoid(1L, _ * _)
+  }
+
+  def sum[A]: Monoid[ValuationFunction[A]] = {
+    makeMonoid(0L, _ + _)
+  }
+
+  private def makeMonoid[A](id: Numeraire, op: (Numeraire, Numeraire) => Numeraire) = {
+    new Monoid[ValuationFunction[A]] {
+      def combine(v1: ValuationFunction[A], v2: ValuationFunction[A]): ValuationFunction[A] = {
+        new ValuationFunction[A] {
+          def apply(a: A): Numeraire = {
+            op(v1(a), v2(a))
+          }
+        }
+      }
+      def empty: ValuationFunction[A] = {
+        new ValuationFunction[A] {
+          def apply(a: A): Numeraire = {
+            id
+          }
+        }
+      }
+    }
+  }
 }
 
 

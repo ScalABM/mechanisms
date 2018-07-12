@@ -19,9 +19,8 @@ package org.economicsl.mechanisms
   * collection of payment functions.
   * @note See definition 9.14 from ''Algorithmic Game Theory'' for details.
   */
-trait DirectRevelationMechanism[A <: Alternative]
-  extends SocialChoiceFunction[ValuationFunctions[A], A] {
+trait DirectRevelationMechanism[A] {
 
-  def apply(paymentFunctions: PaymentFunctions[A])(preferences: ValuationFunctions[A]): (A, Payments)
+  def apply(preferences: Vector[ValuationFunction[A]])(alternatives: Vector[A])(paymentFunctions: Vector[PaymentFunction[A]]): (A, Payments)
 
 }

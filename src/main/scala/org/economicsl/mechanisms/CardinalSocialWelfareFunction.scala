@@ -15,7 +15,8 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.GenIterable
+import cats._
+import implicits._
 
 
 /** Base trait defining a generic cardinal welfare function.
@@ -26,24 +27,19 @@ import scala.collection.GenIterable
   * welfare. The underlying assumption is that individuals utilities can be put
   * on a common scale and compared.
   */
-trait CardinalSocialWelfareFunction[-CC <: GenIterable[P], +P <: ValuationFunction[_ <: Alternative]]
-  extends SocialWelfareFunction[CC, P]
+trait CardinalSocialWelfareFunction[-CC <: Iterable[ValuationFunction[A]], A]
+  extends SocialWelfareFunction[CC, ValuationFunction[A], A]
 
 
 object CardinalSocialWelfareFunction {
 
-  def average[CC <: GenIterable[P], P <: ValuationFunction[A], A <: Alternative]
-             : CardinalSocialWelfareFunction[CC, ValuationFunction[A]] = {
-    new CardinalSocialWelfareFunction[CC, ValuationFunction[A]] {
+  def average[CC <: Iterable[ValuationFunction[A]], A]
+             : CardinalSocialWelfareFunction[CC, A] = {
+    new CardinalSocialWelfareFunction[CC, A] {
       def apply(preferences: CC): ValuationFunction[A] = {
         new ValuationFunction[A] {
           def apply(a: A): Numeraire = {
-            val (total, count) = {
-              preferences.map(v => (v(a), 1))
-                .reduce[(Numeraire, Int)]{
-                  case ((n0, d0), (n1, d1)) => (n0 + n1, d0 + d1) // simplifed using cats!
-                }
-              }
+            val (total, count) = preferences.map(v => (v(a), 1)).reduce(_ |+| _)
             total / count
           }
         }
@@ -52,27 +48,27 @@ object CardinalSocialWelfareFunction {
   }
 
   /** Rawlsian social welfare function: society should maximize the minimum individual Numeraire. */
-  def min[CC <: GenIterable[P], P <: ValuationFunction[A], A <: Alternative]
-         : CardinalSocialWelfareFunction[CC, ValuationFunction[A]] = {
-    new CardinalSocialWelfareFunction[CC, ValuationFunction[A]] {
+  def min[CC <: Iterable[ValuationFunction[A]], A]
+         : CardinalSocialWelfareFunction[CC, A] = {
+    new CardinalSocialWelfareFunction[CC, A] {
       def apply(preferences: CC): ValuationFunction[A] = {
         new ValuationFunction[A] {
           def apply(a: A): Numeraire = {
-            preferences.map(v => v(a)).reduce(_ min _)
+            preferences.reduce(ValuationFunction.min[A].combine)(a)
           }
         }
       }
     }
   }
 
-  /** Nash bargaining maximizes the produce of individual utitlities. */
-  def product[CC <: GenIterable[P], P <: ValuationFunction[A], A <: Alternative]
-             : CardinalSocialWelfareFunction[CC, ValuationFunction[A]] = {
-    new CardinalSocialWelfareFunction[CC, ValuationFunction[A]] {
+  /** Nash bargaining maximizes the produce of individual utilities. */
+  def product[CC <: Iterable[ValuationFunction[A]], A]
+             : CardinalSocialWelfareFunction[CC, A] = {
+    new CardinalSocialWelfareFunction[CC, A] {
       def apply(preferences: CC): ValuationFunction[A] = {
         new ValuationFunction[A] {
           def apply(a: A): Numeraire = {
-            preferences.map(v => v(a)).reduce(_ * _)
+            preferences.reduce(ValuationFunction.prod[A].combine)(a)
           }
         }
       }
@@ -80,13 +76,13 @@ object CardinalSocialWelfareFunction {
   }
 
   /** Benthamite social welfare function: society should maximize the sum of individual Numeraire. */
-  def sum[CC <: GenIterable[P], P <: ValuationFunction[A], A <: Alternative]
-         : CardinalSocialWelfareFunction[CC, ValuationFunction[A]]  = {
-    new CardinalSocialWelfareFunction[CC, ValuationFunction[A]] {
+  def sum[CC <: Iterable[ValuationFunction[A]], A]
+         : CardinalSocialWelfareFunction[CC, A]  = {
+    new CardinalSocialWelfareFunction[CC, A] {
       def apply(preferences: CC): ValuationFunction[A] = {
         new ValuationFunction[A] {
           def apply(a: A): Numeraire = {
-            preferences.map(v => v(a)).reduce(_ + _)
+            preferences.reduce(ValuationFunction.sum[A].combine)(a)
           }
         }
       }
