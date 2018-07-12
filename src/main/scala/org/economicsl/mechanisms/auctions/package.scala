@@ -13,12 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.economicsl
+package org.economicsl.mechanisms
 
 
-package object mechanisms {
+package object auctions {
 
-  /** Type representing a numeraire.
+  /** Type representing "money".
     *
     * When modeling individual agent preferences using a `Preference` ordering,
     * we are not modeling "by how much" an agent prefers one alternative over
@@ -28,5 +28,14 @@ package object mechanisms {
     * groups of agents.
     */
   type Numeraire = Long
+
+  /** Type representing an indexed sequence of payments. */
+  type Payments = Vector[Numeraire]
+
+  /** Type representing an indexed sequence of payment functions. */
+  type PaymentFunctions[A] = Vector[PaymentFunction[A]]
+
+  /** Type representing an indexed sequence of valuation functions. */
+  type ValuationFunctions[A] = Vector[ValuationFunction[A]]
 
 }
