@@ -18,17 +18,6 @@ package org.economicsl.mechanisms
 
 package object auctions {
 
-  /** Type representing "money".
-    *
-    * When modeling individual agent preferences using a `Preference` ordering,
-    * we are not modeling "by how much" an agent prefers one alternative over
-    * another. Introducing the concept of "money" provides a yardstick that allows us
-    * to model exactly this idea.  A key property of "money" is that it is
-    * capable of acting as a store of value that can be transferred amongst
-    * groups of agents.
-    */
-  type Numeraire = Long
-
   /** Type representing an indexed sequence of payments. */
   type Payments = Vector[Numeraire]
 

@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.economicsl.mechanisms.auctions
 
-import org.economicsl.mechanisms.ValuationFunction
+import org.economicsl.mechanisms.{Numeraire, ValuationFunction}
 
 
 /** Base trait for representing payments made by a player as a function of the
