@@ -13,7 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.economicsl.mechanisms
+package org.economicsl.mechanisms.auctions
+
 
 /** A Direct Revelation Mechanism combines a social choice function` with a
   * collection of payment functions.
@@ -21,6 +22,6 @@ package org.economicsl.mechanisms
   */
 trait DirectRevelationMechanism[A] {
 
-  def apply(preferences: Vector[ValuationFunction[A]])(alternatives: Vector[A])(paymentFunctions: Vector[PaymentFunction[A]]): (A, Payments)
+  def apply(preferences: ValuationFunctions[A])(alternatives: Vector[A])(paymentFunctions: PaymentFunctions[A]): (A, Payments)
 
 }
