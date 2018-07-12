@@ -15,15 +15,8 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.GenSeq
-
 
 /** Base trait for representing payments made by a player as a function of the
   * valuation functions of all players.
   */
-trait PaymentFunction[-CC <: GenSeq[ValuationFunction[_ <: Alternative]]]
-  extends (CC => Numeraire) {
-
-  def apply(valuations: CC): Numeraire
-
-}
+trait PaymentFunction[A] extends (Vector[ValuationFunction[A]] => Numeraire)

@@ -15,15 +15,10 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import cats.Contravariant
-<<<<<<< HEAD
-=======
-import cats.instances.map._
-import cats.instances.int._
-import cats.syntax.semigroup._
+import cats._
+import cats.implicits._
 
 import scala.collection.immutable.TreeSet
->>>>>>> master
 
 
 /** Base trait representing an agent's preferences defined over a particular
@@ -80,8 +75,6 @@ object Preference {
       }
     }
   }
-<<<<<<< HEAD
-=======
 
   /** Defines a preference for a particular alternative. */
   def particular[A](alternative: A): Preference[A] = {
@@ -98,5 +91,4 @@ object Preference {
     }
   }
 
->>>>>>> master
 }

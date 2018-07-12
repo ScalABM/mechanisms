@@ -15,7 +15,8 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import cats.Contravariant
+import cats._
+import cats.implicits._
 
 
 /** Class representing a quasi-linear preferences.
@@ -35,10 +36,6 @@ case class QuasiLinearPreference[-A](v: ValuationFunction[A])
     ordering.compare(a1, a2)
   }
 
-  override def ordering[A1 <: A]: Ordering[A1] = {
-    Ordering.by[A1, Numeraire](alternative => v(alternative))
-  }
-
 }
 
 
@@ -52,7 +49,7 @@ object QuasiLinearPreference {
              fa.v(f(alternative))
           }
         }
-        new QuasiLinearPreference[B](fa.v)
+        new QuasiLinearPreference[B](valuationFunction)
       }
     }
   }

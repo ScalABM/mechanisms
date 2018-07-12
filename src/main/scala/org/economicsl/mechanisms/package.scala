@@ -35,9 +35,9 @@ package object mechanisms {
   type Payments = GenSeq[Numeraire]
 
   /** Type representing an indexed sequence of payment functions. */
-  type PaymentFunctions[A <: Alternative] = GenSeq[PaymentFunction[ValuationFunctions[A]]]
+  type PaymentFunctions[A] = Vector[PaymentFunction[A]]
 
   /** Type representing an indexed sequence of valuation functions. */
-  type ValuationFunctions[A <: Alternative] = GenSeq[ValuationFunction[A]]
+  type ValuationFunctions[A] = Vector[ValuationFunction[A]]
 
 }

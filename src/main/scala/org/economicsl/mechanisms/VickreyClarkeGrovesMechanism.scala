@@ -15,46 +15,34 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import scala.collection.GenSet
-
 
 /** trait representing a Vickrey-Clarke-Groves (VCG) mechanism. */
-abstract class VickreyClarkeGrovesMechanism[A <: Alternative](alternatives: GenSet[A])
-  extends DirectRevelationMechanism[A] {
+trait VickreyClarkeGrovesMechanism[A] extends DirectRevelationMechanism[A] {
 
-    def apply(preferences: ValuationFunctions[A]): A = {
-      val socialWelfareFunction = extend(preferences)
-      alternatives.reduce((a, b) => if (socialWelfareFunction(a) < socialWelfareFunction(b)) b else a)
-    }
-
-    def apply(preferences: ValuationFunctions[A], paymentFunctions: PaymentFunctions[A]): (A, Payments) = {
-      val mostPreferredAlternative = apply(preferences)
+    def apply(preferences: Vector[ValuationFunction[A]])(alternatives: Vector[A])(paymentFunctions: Vector[PaymentFunction[A]]): (A, Vector[Numeraire]) = {
+      val socialWelfareFunction = preferences.reduce(ValuationFunction.sum[A].combine)
+      val socialValuations = alternatives.map(a => (a, socialWelfareFunction(a)))
+      val (mostPreferredAlternative, socialValuation) = socialValuations.maxBy{ case (_, valuation) => valuation }
       val payments = paymentFunctions.zipWithIndex.map { case (h, i) =>
-        val otherPlayerValuations = preferences.patch(i, Nil, 1)
-        val otherPlayersSocialValuation = extend(otherPlayerValuations)
-        h(otherPlayerValuations)- otherPlayersSocialValuation(mostPreferredAlternative)
+        val valuation = preferences(i)
+        val otherValuations = preferences.patch(i, Nil, 1)
+        h(otherValuations) - (socialValuation - valuation(mostPreferredAlternative))
       }
       (mostPreferredAlternative, payments)
     }
 
-    def extend: SocialWelfareFunction[ValuationFunctions[A], ValuationFunction[A]] = {
-      new SocialWelfareFunction[ValuationFunctions[A], ValuationFunction[A]] {
-        def apply(preferences: ValuationFunctions[A]): ValuationFunction[A] = {
-          new ValuationFunction[A] {
-            def apply(alternative: A): Numeraire = {
-              preferences.map(p => p(alternative)).reduce(_ + _)
-            }
-          }
-        }
-      }
+    def withClarkePivotRule(preferences: Vector[ValuationFunction[A]])(alternatives: Vector[A]): (A, Vector[Numeraire]) = {
+      val paymentFunctions = preferences.map(p => clarkePivotRule(alternatives))
+      apply(preferences)(alternatives)(paymentFunctions)
     }
 
-  }
-
-
-  object VickreyClarkeGrovesMechanism {
-
-    def apply[A <: Alternative](alternatives: GenSet[A]): VickreyClarkeGrovesMechanism[A] = {
-      ???
+    private[this] def clarkePivotRule(alternatives: Vector[A]) = {
+      new PaymentFunction[A] {
+        def apply(preferences: Vector[ValuationFunction[A]]): Numeraire = {
+          val socialWelfareFunction = preferences.reduce(ValuationFunction.sum[A].combine)
+          val socialValuations = alternatives.map(a => socialWelfareFunction(a))
+          socialValuations.max
+        }
+      }
     }
   }
