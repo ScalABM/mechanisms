@@ -15,12 +15,12 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
+/** A Direct Revelation Mechanism combines a social choice function` with a
+  * collection of payment functions.
+  * @note See definition 9.14 from ''Algorithmic Game Theory'' for details.
+  */
+trait DirectRevelationMechanism[A] {
 
-trait UtilityFunction[-A <: Alternative]
-  extends Preference[A] with ((A) => Utility) {
-
-  def compare(a1: A, a2: A): Int = {
-    apply(a1).compare(apply(a2))
-  }
+  def apply(preferences: Vector[ValuationFunction[A]])(alternatives: Vector[A])(paymentFunctions: Vector[PaymentFunction[A]]): (A, Payments)
 
 }

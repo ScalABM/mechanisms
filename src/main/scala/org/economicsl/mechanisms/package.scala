@@ -15,6 +15,8 @@ limitations under the License.
 */
 package org.economicsl
 
+import scala.collection.GenSeq
+
 
 package object mechanisms {
 
@@ -29,7 +31,13 @@ package object mechanisms {
     */
   type Numeraire = Long
 
-  /** Type representing "utility". */
-  type Utility = Long
+  /** Type representing an indexed sequence of payments. */
+  type Payments = GenSeq[Numeraire]
+
+  /** Type representing an indexed sequence of payment functions. */
+  type PaymentFunctions[A] = Vector[PaymentFunction[A]]
+
+  /** Type representing an indexed sequence of valuation functions. */
+  type ValuationFunctions[A] = Vector[ValuationFunction[A]]
 
 }

@@ -34,6 +34,18 @@ trait ValuationFunction[-A]
 
 object ValuationFunction {
 
+  implicit val contravariant: Contravariant[ValuationFunction] = {
+    new Contravariant[ValuationFunction] {
+      def contramap[A, B](fa: ValuationFunction[A])(f: B => A): ValuationFunction[B] = {
+        new ValuationFunction[B] {
+          def apply(alternative: B): Numeraire = {
+            fa(f(alternative))
+          }
+        }
+      }
+    }
+  }
+
   def min[A]: Monoid[ValuationFunction[A]] = {
     makeMonoid(0L, _ min _)
   }

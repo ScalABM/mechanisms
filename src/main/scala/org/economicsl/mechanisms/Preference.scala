@@ -15,10 +15,8 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import cats.Contravariant
-import cats.instances.map._
-import cats.instances.int._
-import cats.syntax.semigroup._
+import cats._
+import cats.implicits._
 
 import scala.collection.immutable.TreeSet
 
