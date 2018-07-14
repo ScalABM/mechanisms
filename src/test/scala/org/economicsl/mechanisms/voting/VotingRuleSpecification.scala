@@ -33,8 +33,8 @@ object VotingRuleSpecification extends Properties("voting-rules") {
     } yield Candidate(uuid, name)
   }
 
-  def randomCandidates: Gen[Set[Candidate]] = Gen.sized {
-    size => Gen.containerOfN[Set, Candidate](size, randomCandidate)
+  def randomCandidates: Gen[Vector[Candidate]] = {
+    Gen.nonEmptyContainerOf[Vector, Candidate](randomCandidate)
   }
 
   def randomParticularVoter(candidate: Candidate): Gen[Voter] = {
@@ -43,15 +43,15 @@ object VotingRuleSpecification extends Properties("voting-rules") {
     } yield Voter(uuid, Preference.particular(candidate))
   }
 
-  def randomParticularVoters(candidate: Candidate): Gen[Set[Voter]] = Gen.sized {
-    size => Gen.containerOfN[Set, Voter](size, randomParticularVoter(candidate))
+  def randomParticularVoters(candidate: Candidate): Gen[Vector[Voter]] = {
+    Gen.nonEmptyContainerOf[Vector, Voter](randomParticularVoter(candidate))
   }
 
 
-  val randomInputData: Gen[(Set[Candidate], Candidate, Set[Voter])] = {
+  val randomInputData: Gen[(Vector[Candidate], Candidate, Vector[Voter])] = {
     for {
       cs <- randomCandidates
-      c <- Gen.oneOf(cs.toVector)
+      c <- Gen.oneOf[Candidate](cs)
       vs <- randomParticularVoters(c)
     } yield (cs, c, vs)
   }
@@ -59,6 +59,12 @@ object VotingRuleSpecification extends Properties("voting-rules") {
   property("borda count satisfies unanimity") = Prop.forAll(randomInputData) {
     case (candidates, candidate, voters) =>
       val winner = VotingRule.bordaCount(voters.map(_.preference))(candidates)
+      winner == candidate
+  }
+
+  property("plurality satisfies unanimity") = Prop.forAll(randomInputData) {
+    case (candidates, candidate, voters) =>
+      val winner = VotingRule.plurality(voters.map(_.preference))(candidates)
       winner == candidate
   }
 
