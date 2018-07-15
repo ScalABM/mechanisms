@@ -21,12 +21,12 @@ import cats.implicits._
 import org.economicsl.mechanisms.{Preference, SocialChoiceFunction, SocialWelfareFunction}
 
 
-trait VotingRule[A] extends SocialChoiceFunction[Set[Preference[A]], Preference[A], Set[A], A] {
+trait VotingRule[A] extends SocialChoiceFunction[Iterable[Preference[A]], Preference[A], Iterable[A], A] {
   self =>
 
-  final def extend(alternatives: Set[A]): SocialWelfareFunction[Set[Preference[A]], Preference[A], A] = {
-    new SocialWelfareFunction[Set[Preference[A]], Preference[A], A] {
-      def apply(preferences: Set[Preference[A]]): Preference[A] = {
+  final def extend(alternatives: Iterable[A]): SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
+    new SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] {
+      def apply(preferences: Iterable[Preference[A]]): Preference[A] = {
         new Preference[A] {
           def compare(a1: A, a2: A): Int = {
             if (!alternatives.exists(_ == a1) & alternatives.exists(_ == a2)) {
@@ -49,7 +49,7 @@ object VotingRule {
 
   def majority[A]: VotingRule[Option[A]] = {
     new VotingRule[Option[A]] {
-      def apply(preferences: Set[Preference[Option[A]]])(alternatives: Set[Option[A]]): Option[A] = {
+      def apply(preferences: Iterable[Preference[Option[A]]])(alternatives: Iterable[Option[A]]): Option[A] = {
         val mostPreferredAlternatives = preferences.map(p => Map(p.mostPreferred(alternatives) -> 1))
         val voteCounts = mostPreferredAlternatives.reduce(_ |+| _)
         val majorityPreferredAlternative = {
@@ -66,7 +66,7 @@ object VotingRule {
 
   def plurality[A]: VotingRule[A] = {
     new VotingRule[A] {
-      def apply(preferences: Set[Preference[A]])(alternatives: Set[A]): A = {
+      def apply(preferences: Iterable[Preference[A]])(alternatives: Iterable[A]): A = {
         val mostPreferredAlternatives = preferences.map(p => Map(p.mostPreferred(alternatives) -> 1))
         val voteCounts = mostPreferredAlternatives.reduce(_ |+| _)
         val (mostPreferredAlternative, _) = voteCounts.maxBy{ case (_, count) => count }
@@ -77,7 +77,7 @@ object VotingRule {
 
   def bordaCount[A]: VotingRule[A] = {
     new VotingRule[A] {
-      def apply(preferences: Set[Preference[A]])(alternatives: Set[A]): A = {
+      def apply(preferences: Iterable[Preference[A]])(alternatives: Iterable[A]): A = {
         val rankings = preferences.map(p => p.rank(alternatives))
         val voteCounts = rankings.reduce(_ |+| _)
         val (mostPreferredAlternative, _) = voteCounts.maxBy{ case (_, count) => count }

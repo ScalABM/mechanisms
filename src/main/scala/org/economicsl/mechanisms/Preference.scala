@@ -76,6 +76,15 @@ object Preference {
     }
   }
 
+  /** Assumes that alternatives are ordered from least to most preferred. */
+  def fromSeq[A](alternatives: Seq[A]): Preference[A] = {
+    new Preference[A] {
+      def compare(a1: A, a2: A): Int = {
+        alternatives.indexOf(a1).compare(alternatives.indexOf(a2))
+      }
+    }
+  }
+
   /** Defines a preference for a particular alternative. */
   def particular[A](alternative: A): Preference[A] = {
     new Preference[A] {
