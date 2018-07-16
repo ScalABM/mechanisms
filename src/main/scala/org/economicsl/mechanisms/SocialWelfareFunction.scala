@@ -23,3 +23,15 @@ package org.economicsl.mechanisms
   */
 trait SocialWelfareFunction[-CC <: Iterable[P], +P <: Preference[A], A]
   extends (CC => P)
+
+
+object SocialWelfareFunction {
+
+  def lexicographic[A]: SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
+    new SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] {
+      def apply(preferences: Iterable[Preference[A]]): Preference[A] = {
+        preferences.reduce(Preference.whenEqual[A])
+      }
+    }
+  }
+}
