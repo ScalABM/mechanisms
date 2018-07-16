@@ -41,7 +41,7 @@ trait Preference[A] extends Order[A] {
 
 object Preference {
 
-  implicit val contravariant: ContravariantSemigroupal[Preference] = {
+  implicit val contravariantSemiGroupal: ContravariantSemigroupal[Preference] = {
     new ContravariantSemigroupal[Preference] {
       def contramap[A, B](fa: Preference[A])(f: B => A): Preference[B] = {
         new Preference[B] {
