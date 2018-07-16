@@ -53,6 +53,14 @@ object Preference {
     }
   }
 
+  def from[A](f: (A, A) => Int): Preference[A] = {
+    new Preference[A] {
+      def compare(a1: A, a2: A): Int = {
+        f(a1, a2)
+      }
+    }
+  }
+
   /** Assumes that alternatives are ordered from least to most preferred. */
   def fromSeq[A](alternatives: Seq[A]): Preference[A] = {
     new Preference[A] {
@@ -66,6 +74,21 @@ object Preference {
     new Preference[A] {
       def compare(a1: A, a2: A): Int = {
         0
+      }
+    }
+  }
+
+  def monoid[A](implicit ev: Monoid[(A, A) => Int]): Monoid[Preference[A]] = {
+    new Monoid[Preference[A]] {
+      def combine(p1: Preference[A], p2: Preference[A]): Preference[A] = {
+        new Preference[A] {
+          def compare(a1: A, a2: A): Int = {
+            ev.combine(p1.compare, p2.compare)(a1, a2)
+          }
+        }
+      }
+      val empty: Preference[A] = {
+        from(ev.empty)
       }
     }
   }
