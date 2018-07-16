@@ -22,7 +22,7 @@ import cats.implicits._
 /** Base trait for representing preferences defined over alternatives in terms
   * of each alternative's monetary value.
   */
-trait ValuationFunction[-A]
+trait ValuationFunction[A]
   extends Preference[A] with ((A) => Numeraire) {
 
   def compare(a1: A, a2: A): Int = {

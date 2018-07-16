@@ -25,38 +25,15 @@ import scala.collection.immutable.TreeSet
   * type of `Alternative`.
   * @tparam A
   */
-trait Preference[-A] {
-  self =>
+trait Preference[A] extends Order[A] {
 
-  /** Return an integer whose sign communicates how `a1` compares to `a2`.
-    *
-    * The result sign has the following meaning:
-    * - negative if `a2` is preferred to `a1`.
-    * - positive if `a1` is weakly preferred to `a2`.
-    * - zero if indifferent between `a1` and `a2`
-    */
-  def compare(a1: A, a2: A): Int
-
-  final def ordering[A1 <: A]: Ordering[A1] = {
-    new Ordering[A1] {
-      def compare(a1: A1, a2: A1): Int = {
-        self.compare(a1, a2)
-      }
-    }
+  final def mostPreferred(alternatives: Iterable[A]): A = {
+    alternatives.reduce(max)
   }
 
-  final def mostPreferred[A1 <: A](alternatives: Iterable[A1]) = {
-    alternatives.max(ordering)
-  }
-
-  final def rank[A1 <: A](alternatives: Iterable[A1]): Map[A1, Int] = {
-    val sortedAlternatives = TreeSet.empty[A1](ordering) ++ alternatives
-    sortedAlternatives.zipWithIndex.aggregate(Map.empty[A1, Int])(_ + _, _ |+| _)
-  }
-
-  /** Return `a1` if `a1` is weakly preferred to `a2`; otherwise `a2`. */
-  final def weaklyPrefers[A1 <: A](a1: A1, a2: A1): A1 = {
-    if (compare(a1, a2) >= 0) a1 else a2
+  final def rank(alternatives: Iterable[A]): Map[A, Int] = {
+    val sortedAlternatives = TreeSet.empty[A](toOrdering) ++ alternatives
+    sortedAlternatives.zipWithIndex.aggregate(Map.empty[A, Int])(_ + _, _ |+| _)
   }
 
 }

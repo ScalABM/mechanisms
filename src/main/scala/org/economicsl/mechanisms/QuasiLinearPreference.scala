@@ -25,7 +25,7 @@ import cats.implicits._
   *          in units of some `Numeraire`.
   * @tparam A the type of `Alternative` over which the function `v` as defined.
   */
-case class QuasiLinearPreference[-A](v: ValuationFunction[A])
+case class QuasiLinearPreference[A](v: ValuationFunction[A])
   extends Preference[A] with Function2[A, Numeraire, Numeraire] {
 
   def apply(alternative: A, payment: Numeraire): Numeraire = {
@@ -33,7 +33,7 @@ case class QuasiLinearPreference[-A](v: ValuationFunction[A])
   }
 
   def compare(a1: A, a2: A): Int = {
-    ordering.compare(a1, a2)
+    v.compare(a1, a2)
   }
 
 }
