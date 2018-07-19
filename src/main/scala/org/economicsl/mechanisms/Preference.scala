@@ -100,11 +100,7 @@ object Preference {
   def monoid[A](implicit ev: Monoid[(A, A) => Int]): Monoid[Preference[A]] = {
     new Monoid[Preference[A]] {
       def combine(p1: Preference[A], p2: Preference[A]): Preference[A] = {
-        new Preference[A] {
-          def compare(a1: A, a2: A): Int = {
-            ev.combine(p1.compare, p2.compare)(a1, a2)
-          }
-        }
+        from(ev.combine(p1.compare, p2.compare))
       }
       val empty: Preference[A] = {
         from(ev.empty)
@@ -144,11 +140,7 @@ object Preference {
   def semigroup[A](implicit ev: Semigroup[(A, A) => Int]): Semigroup[Preference[A]] = {
     new Semigroup[Preference[A]] {
       def combine(p1: Preference[A], p2: Preference[A]): Preference[A] = {
-        new Preference[A] {
-          def compare(a1: A, a2: A): Int = {
-            ev.combine(p1.compare, p2.compare)(a1, a2)
-          }
-        }
+        from(ev.combine(p1.compare, p2.compare))
       }
     }
   }
