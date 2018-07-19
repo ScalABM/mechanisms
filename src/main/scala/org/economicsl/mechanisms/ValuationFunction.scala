@@ -46,34 +46,76 @@ object ValuationFunction {
     }
   }
 
-  def min[A]: Monoid[ValuationFunction[A]] = {
-    makeMonoid(0L, _ min _)
-  }
-
-  def prod[A]: Monoid[ValuationFunction[A]] = {
-    makeMonoid(1L, _ * _)
-  }
-
-  def sum[A]: Monoid[ValuationFunction[A]] = {
-    makeMonoid(0L, _ + _)
-  }
-
-  private def makeMonoid[A](id: Numeraire, op: (Numeraire, Numeraire) => Numeraire) = {
-    new Monoid[ValuationFunction[A]] {
-      def combine(v1: ValuationFunction[A], v2: ValuationFunction[A]): ValuationFunction[A] = {
-        new ValuationFunction[A] {
-          def apply(a: A): Numeraire = {
-            op(v1(a), v2(a))
-          }
-        }
-      }
-      def empty: ValuationFunction[A] = {
-        new ValuationFunction[A] {
-          def apply(a: A): Numeraire = {
-            id
-          }
-        }
+  def from[A](v: A => Numeraire): ValuationFunction[A] = {
+    new ValuationFunction[A] {
+      def apply(alternative: A): Numeraire = {
+        v(alternative)
       }
     }
   }
+
+  def min[A]: Monoid[ValuationFunction[A]] = {
+    monoid(_minMonoid)
+  }
+
+  def prod[A]: Monoid[ValuationFunction[A]] = {
+    monoid(_prodMonoid)
+  }
+
+  def sum[A]: Monoid[ValuationFunction[A]] = {
+    monoid(_sumMonoid)
+  }
+
+  def monoid[A](implicit ev: Monoid[A => Numeraire]): Monoid[ValuationFunction[A]] = {
+    new Monoid[ValuationFunction[A]] {
+      def combine(v1: ValuationFunction[A], v2: ValuationFunction[A]): ValuationFunction[A] = {
+        from(ev.combine(v1, v2))
+      }
+      def empty: ValuationFunction[A] = {
+        from(ev.empty)
+      }
+    }
+  }
+
+  def semigroup[A](implicit ev: Semigroup[A => Numeraire]): Semigroup[ValuationFunction[A]] = {
+    new Semigroup[ValuationFunction[A]] {
+      def combine(v1: ValuationFunction[A], v2: ValuationFunction[A]): ValuationFunction[A] = {
+        from(ev.combine(v1, v2))
+      }
+    }
+  }
+
+  private def _minMonoid[A] = {
+    new Monoid[A => Numeraire] {
+      def combine(v1: A => Numeraire, v2: A => Numeraire): A => Numeraire = {
+        a => v1(a).min(v2(a))
+      }
+      def empty: A => Numeraire = {
+        a => Long.MaxValue
+      }
+    }
+  }
+
+  private def _prodMonoid[A] = {
+    new Monoid[A => Numeraire] {
+      def combine(v1: A => Numeraire, v2: A => Numeraire): A => Numeraire = {
+        a => v1(a) * v2(a)
+      }
+      def empty: A => Numeraire = {
+        a => 1L
+      }
+    }
+  }
+
+  private def _sumMonoid[A] = {
+    new Monoid[A => Numeraire] {
+      def combine(v1: A => Numeraire, v2: A => Numeraire): A => Numeraire = {
+        a => v1(a) + v2(a)
+      }
+      def empty: A => Numeraire = {
+        a => 0L
+      }
+    }
+  }
+
 }
