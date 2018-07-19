@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import cats.Semigroup
+import cats.{Monoid, Semigroup}
 
 
 /** Base trait defining a generic social welfare function.
@@ -33,6 +33,15 @@ object SocialWelfareFunction {
     new SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] {
       def apply(preferences: Iterable[Preference[A]]): Preference[A] = {
         preferences.reduce(Preference.leftBiasedWhenIndifferent[A].combine)
+      }
+    }
+  }
+
+  /** Define a `SocialWelfareFunction` using an available `Monoid[Preference[A]]`. */
+  def fold[A](implicit ev: Monoid[Preference[A]]): SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
+    new SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] {
+      def apply(preferences: Iterable[Preference[A]]): Preference[A] = {
+        preferences.fold(ev.empty)(ev.combine)
       }
     }
   }
