@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
-import cats.Semigroup
+import cats.{Monoid, Semigroup}
 
 
 /** Base trait defining a generic social welfare function.
@@ -29,15 +29,19 @@ trait SocialWelfareFunction[-CC <: Iterable[P], +P <: Preference[A], A]
 
 object SocialWelfareFunction {
 
-  def lexicographic[A]: SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
+  def fold[A](implicit ev: Monoid[Preference[A]]): SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
     new SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] {
       def apply(preferences: Iterable[Preference[A]]): Preference[A] = {
-        preferences.reduce(Preference.whenEqual[A])
+        preferences.fold(ev.empty)(ev.combine)
       }
     }
   }
 
-  /** Define a `SocialWelfareFunction` using an available `Semigroup[Preference[A]]`. */
+  /** If the head element in the collection of preferences can strictly compare any two instances of type `A`, then head preference will be a dicator. */
+  def leftBiased[A]: SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
+    fold(Preference.leftBiased)
+  }
+
   def reduce[A](implicit ev: Semigroup[Preference[A]]): SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
     new SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] {
       def apply(preferences: Iterable[Preference[A]]): Preference[A] = {
@@ -45,4 +49,10 @@ object SocialWelfareFunction {
       }
     }
   }
+
+  /** If the last element in the collection of preferences can strictly compare any two instances of type `A`, then the last preference will be a dicator. */
+  def rightBiased[A]: SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
+    fold(Preference.rightBiased[A])
+  }
+
 }
