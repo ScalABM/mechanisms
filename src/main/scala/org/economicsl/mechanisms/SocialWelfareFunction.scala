@@ -15,6 +15,8 @@ limitations under the License.
 */
 package org.economicsl.mechanisms
 
+import cats.Semigroup
+
 
 /** Base trait defining a generic social welfare function.
   *
@@ -31,6 +33,15 @@ object SocialWelfareFunction {
     new SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] {
       def apply(preferences: Iterable[Preference[A]]): Preference[A] = {
         preferences.reduce(Preference.leftBiasedWhenIndifferent[A].combine)
+      }
+    }
+  }
+
+  /** Define a `SocialWelfareFunction` using an available `Semigroup[Preference[A]]`. */
+  def reduce[A](implicit ev: Semigroup[Preference[A]]): SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
+    new SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] {
+      def apply(preferences: Iterable[Preference[A]]): Preference[A] = {
+        preferences.reduce(ev.combine)
       }
     }
   }
