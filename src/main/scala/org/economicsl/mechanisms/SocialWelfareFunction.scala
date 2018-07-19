@@ -30,7 +30,7 @@ object SocialWelfareFunction {
   def lexicographic[A]: SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
     new SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] {
       def apply(preferences: Iterable[Preference[A]]): Preference[A] = {
-        preferences.reduce(Preference.whenEqual[A])
+        preferences.reduce(Preference.leftBiasedWhenIndifferent[A].combine)
       }
     }
   }

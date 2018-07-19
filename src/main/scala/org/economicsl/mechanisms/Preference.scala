@@ -108,29 +108,43 @@ object Preference {
     }
   }
 
-  /** Returns a new `Preference[A]` instance that compares using the first
-    * `Preference` instance and then uses the second `Preference` instance to
-    * "break ties".
+
+  /** Return a `Monoid[Preference[A]]` instance that combines two `Preference[A]`
+    * instances to create a new `Preference[A]` instance that compares using the
+    * first preference instance and then uses the second preference instance to
+    * break ties. The empty value
     */
-  def whenEqual[A](p1: Preference[A], p2: Preference[A]): Preference[A] = {
-    new Preference[A] {
-      def compare(a1: A, a2: A): Int = {
-        val c = p1.compare(a1, a2)
-        if (c == 0) p2.compare(a1, a2) else c
+  def leftBiasedWhenIndifferent[A]: Monoid[Preference[A]] = {
+    monoid(leftBiasedWhenEmpty)
+  }
+
+  /** Return a `Monoid[Preference[A]]` instance that combines two `Preference[A]`
+    * instances to create a new `Preference[A]` instance that compares using the
+    * second preference instance and then uses the first preference instance to
+    * break ties.
+    */
+  def rightBiasedWhenIndifferent[A]: Monoid[Preference[A]] = {
+    monoid(rightBiasedWhenEmpty)
+  }
+
+  private def leftBiasedWhenEmpty[A]: Monoid[(A, A) => Int] = {
+    new Monoid[(A, A) => Int] {
+      def combine(c1: (A, A) => Int, c2: (A, A) => Int): (A, A) => Int = {
+        (a1, a2) => if (c1(a1, a2) == 0) c2(a1, a2) else c1(a1, a2)
+      }
+      def empty: (A, A) => Int = {
+        (a1, a2) => 0
       }
     }
   }
 
-  /** A monoid instance can be generated for any `A` by using whenEqual as the
-    * combine method and indifference as the empty value.
-    */
-  def whenEqualMonoid[A]: Monoid[Preference[A]] = {
-    new Monoid[Preference[A]] {
-      def combine(p1: Preference[A], p2: Preference[A]): Preference[A] = {
-        whenEqual(p1, p2)
+  private def rightBiasedWhenEmpty[A]: Monoid[(A, A) => Int] = {
+    new Monoid[(A, A) => Int] {
+      def combine(c1: (A, A) => Int, c2: (A, A) => Int): (A, A) => Int = {
+        (a1, a2) => if (c2(a1, a2) == 0) c1(a1, a2) else c2(a1, a2)
       }
-      val empty: Preference[A] = {
-        indifference
+      def empty: (A, A) => Int = {
+        (a1, a2) => 0
       }
     }
   }
