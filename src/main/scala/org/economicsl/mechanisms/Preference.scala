@@ -41,8 +41,8 @@ trait Preference[A] extends Order[A] {
 
 object Preference {
 
-  implicit val contravariantSemiGroupal: ContravariantSemigroupal[Preference] = {
-    new ContravariantSemigroupal[Preference] {
+  implicit val contravariant: Contravariant[Preference] = {
+    new Contravariant[Preference] {
       def contramap[A, B](fa: Preference[A])(f: B => A): Preference[B] = {
         new Preference[B] {
           def compare(b1: B, b2: B): Int = {
@@ -50,8 +50,16 @@ object Preference {
           }
         }
       }
+    }
+  }
+
+  def contravariantSemigroupal(implicit ev: ContravariantSemigroupal[({ type F[A] = (A, A) => Int })#F]): ContravariantSemigroupal[Preference] = {
+    new ContravariantSemigroupal[Preference] {
+      def contramap[A, B](fa: Preference[A])(f: B => A): Preference[B] = {
+        from(ev.contramap(fa.compare)(f))
+      }
       def product[A, B](fa: Preference[A], fb: Preference[B]): Preference[(A, B)] = {
-        product(fa, fb)
+        from(ev.product(fa.compare, fb.compare))
       }
     }
   }
@@ -79,6 +87,14 @@ object Preference {
         0
       }
     }
+  }
+
+  val leftBiasedContravariantSemigroupal: ContravariantSemigroupal[Preference] = {
+    contravariantSemigroupal(_leftBiasedContravariantSemigroupal)
+  }
+
+  def leftBiasedMonoid[A]: Monoid[Preference[A]] = {
+    monoid(_leftBiased)
   }
 
   def monoid[A](implicit ev: Monoid[(A, A) => Int]): Monoid[Preference[A]] = {
@@ -111,13 +127,17 @@ object Preference {
     }
   }
 
-  def product[A, B](p1: Preference[A], p2: Preference[B]): Preference[(A, B)] = {
-    new Preference[(A, B)] {
-      def compare(ab1: (A, B), ab2: (A, B)): Int = {
-        val c = p1.compare(ab1._1, ab2._1)
-        if (c == 0) p2.compare(ab1._2, ab2._2) else c
-      }
-    }
+  val rightBiasedContravariantSemigroupal: ContravariantSemigroupal[Preference] = {
+    contravariantSemigroupal(_rightBiasedContravariantSemigroupal)
+  }
+
+  /** Return a `Monoid[Preference[A]]` instance that combines two `Preference[A]`
+    * instances to create a new `Preference[A]` instance that compares using the
+    * second preference instance and then uses the first preference instance to
+    * break ties.
+    */
+  def rightBiasedMonoid[A]: Monoid[Preference[A]] = {
+    monoid(_rightBiased)
   }
 
   /** Derives a `Semigroup[Preference[A]]` instance from `Semigroup[(A, A) => Int]` instance. */
@@ -133,19 +153,6 @@ object Preference {
     }
   }
 
-  def leftBiased[A]: Monoid[Preference[A]] = {
-    monoid(_leftBiased)
-  }
-
-  /** Return a `Monoid[Preference[A]]` instance that combines two `Preference[A]`
-    * instances to create a new `Preference[A]` instance that compares using the
-    * second preference instance and then uses the first preference instance to
-    * break ties.
-    */
-  def rightBiased[A]: Monoid[Preference[A]] = {
-    monoid(_rightBiased)
-  }
-
   private def _leftBiased[A]: Monoid[(A, A) => Int] = {
     new Monoid[(A, A) => Int] {
       def combine(c1: (A, A) => Int, c2: (A, A) => Int): (A, A) => Int = {
@@ -157,6 +164,22 @@ object Preference {
     }
   }
 
+  private lazy val _leftBiasedContravariantSemigroupal: ContravariantSemigroupal[({ type F[A] = (A, A) => Int })#F] = {
+    new ContravariantSemigroupal[({ type F[A] = (A, A) => Int })#F] {
+      def contramap[A, B](fa: (A, A) => Int)(f: B => A): (B, B) => Int = {
+        (b1, b2) => fa(f(b1), f(b2))
+      }
+      def product[A, B](fa: (A, A) => Int, fb: (B, B) => Int): ((A, B), (A, B)) => Int = {
+        (ab1: (A, B), ab2: (A, B)) =>
+          if (fa(ab1._1, ab2._1) == 0) {
+            fb(ab1._2, ab2._2)
+          } else {
+            fa(ab1._1, ab2._1)
+          }
+      }
+    }
+  }
+
   private def _rightBiased[A]: Monoid[(A, A) => Int] = {
     new Monoid[(A, A) => Int] {
       def combine(c1: (A, A) => Int, c2: (A, A) => Int): (A, A) => Int = {
@@ -164,6 +187,22 @@ object Preference {
       }
       def empty: (A, A) => Int = {
         (a1, a2) => 0
+      }
+    }
+  }
+
+  private lazy val _rightBiasedContravariantSemigroupal: ContravariantSemigroupal[({ type F[A] = (A, A) => Int })#F] = {
+    new ContravariantSemigroupal[({ type F[A] = (A, A) => Int })#F] {
+      def contramap[A, B](fa: (A, A) => Int)(f: B => A): (B, B) => Int = {
+        (b1, b2) => fa(f(b1), f(b2))
+      }
+      def product[A, B](fa: (A, A) => Int, fb: (B, B) => Int): ((A, B), (A, B)) => Int = {
+        (ab1: (A, B), ab2: (A, B)) =>
+          if (fb(ab1._2, ab2._2) == 0) {
+            fa(ab1._1, ab2._1)
+          } else {
+            fb(ab1._2, ab2._2)
+          }
       }
     }
   }
