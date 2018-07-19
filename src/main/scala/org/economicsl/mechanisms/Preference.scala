@@ -122,8 +122,8 @@ object Preference {
   }
 
 
-  def leftBiasedWhenIndifferent[A]: Monoid[Preference[A]] = {
-    monoid(leftBiasedWhenEmpty)
+  def leftBiased[A]: Monoid[Preference[A]] = {
+    monoid(_leftBiased)
   }
 
   /** Return a `Monoid[Preference[A]]` instance that combines two `Preference[A]`
@@ -131,11 +131,11 @@ object Preference {
     * second preference instance and then uses the first preference instance to
     * break ties.
     */
-  def rightBiasedWhenIndifferent[A]: Monoid[Preference[A]] = {
-    monoid(rightBiasedWhenEmpty)
+  def rightBiased[A]: Monoid[Preference[A]] = {
+    monoid(_rightBiased)
   }
 
-  private def leftBiasedWhenEmpty[A]: Monoid[(A, A) => Int] = {
+  private def _leftBiased[A]: Monoid[(A, A) => Int] = {
     new Monoid[(A, A) => Int] {
       def combine(c1: (A, A) => Int, c2: (A, A) => Int): (A, A) => Int = {
         (a1, a2) => if (c1(a1, a2) == 0) c2(a1, a2) else c1(a1, a2)
@@ -146,7 +146,7 @@ object Preference {
     }
   }
 
-  private def rightBiasedWhenEmpty[A]: Monoid[(A, A) => Int] = {
+  private def _rightBiased[A]: Monoid[(A, A) => Int] = {
     new Monoid[(A, A) => Int] {
       def combine(c1: (A, A) => Int, c2: (A, A) => Int): (A, A) => Int = {
         (a1, a2) => if (c2(a1, a2) == 0) c1(a1, a2) else c2(a1, a2)
