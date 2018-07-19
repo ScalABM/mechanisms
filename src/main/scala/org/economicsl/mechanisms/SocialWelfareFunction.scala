@@ -39,7 +39,7 @@ object SocialWelfareFunction {
 
   /** If the head element in the collection of preferences can strictly compare any two instances of type `A`, then head preference will be a dicator. */
   def leftBiased[A]: SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
-    fold(Preference.leftBiased)
+    fold(Preference.leftBiasedMonoid)
   }
 
   def reduce[A](implicit ev: Semigroup[Preference[A]]): SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
@@ -52,7 +52,7 @@ object SocialWelfareFunction {
 
   /** If the last element in the collection of preferences can strictly compare any two instances of type `A`, then the last preference will be a dicator. */
   def rightBiased[A]: SocialWelfareFunction[Iterable[Preference[A]], Preference[A], A] = {
-    fold(Preference.rightBiased[A])
+    fold(Preference.rightBiasedMonoid)
   }
 
 }
