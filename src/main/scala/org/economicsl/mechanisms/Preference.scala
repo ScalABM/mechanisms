@@ -85,6 +85,19 @@ object Preference {
     }
   }
 
+  /** Derives a `Semigroup[Preference[A]]` instance from `Semigroup[(A, A) => Int]` instance. */
+  def semigroup[A](implicit ev: Semigroup[(A, A) => Int]): Semigroup[Preference[A]] = {
+    new Semigroup[Preference[A]] {
+      def combine(p1: Preference[A], p2: Preference[A]): Preference[A] = {
+        new Preference[A] {
+          def compare(a1: A, a2: A): Int = {
+            ev.combine(p1.compare, p2.compare)(a1, a2)
+          }
+        }
+      }
+    }
+  }
+
   /** Returns a new `Preference[A]` instance that compares using the first
     * `Preference` instance and then uses the second `Preference` instance to
     * "break ties".
