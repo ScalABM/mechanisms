@@ -88,8 +88,8 @@ object ValuationFunction {
     }
   }
 
-  def particular[A](alernative: A)(implicit ev: ValuationFunction[A]): ValuationFunction[A] = {
-    new Valuation[A] {
+  def particular[A](alternative: A)(implicit ev: ValuationFunction[A]): ValuationFunction[A] = {
+    new ValuationFunction[A] {
       def apply(a: A): Numeraire = {
         if (a == alternative) ev(a) else 0L
       }
