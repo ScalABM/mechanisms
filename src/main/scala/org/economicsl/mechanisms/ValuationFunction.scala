@@ -46,6 +46,17 @@ object ValuationFunction {
     }
   }
 
+  def contravariantSemigroupal(implicit ev: ContravariantSemigroupal[({ type F[A] = A => Numeraire })#F]): ContravariantSemigroupal[ValuationFunction] = {
+    new ContravariantSemigroupal[ValuationFunction] {
+      def contramap[A, B](fa: ValuationFunction[A])(f: B => A): ValuationFunction[B] = {
+        from(ev.contramap(fa.apply)(f))
+      }
+      def product[A, B](fa: ValuationFunction[A], fb: ValuationFunction[B]): ValuationFunction[(A, B)] = {
+        from(ev.product(fa.apply, fb.apply))
+      }
+    }
+  }
+
   def from[A](v: A => Numeraire): ValuationFunction[A] = {
     new ValuationFunction[A] {
       def apply(alternative: A): Numeraire = {
