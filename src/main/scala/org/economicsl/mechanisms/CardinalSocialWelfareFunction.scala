@@ -33,10 +33,9 @@ trait CardinalSocialWelfareFunction[-CC <: Iterable[ValuationFunction[A]], A]
 
 object CardinalSocialWelfareFunction {
 
-  def average[CC <: Iterable[ValuationFunction[A]], A]
-             : CardinalSocialWelfareFunction[CC, A] = {
-    new CardinalSocialWelfareFunction[CC, A] {
-      def apply(preferences: CC): ValuationFunction[A] = {
+  def average[A]: CardinalSocialWelfareFunction[Iterable[ValuationFunction[A]], A] = {
+    new CardinalSocialWelfareFunction[Iterable[ValuationFunction[A]], A] {
+      def apply(preferences: Iterable[ValuationFunction[A]]): ValuationFunction[A] = {
         new ValuationFunction[A] {
           def apply(a: A): Numeraire = {
             val (total, count) = preferences.map(v => (v(a), 1)).reduce(_ |+| _)
@@ -48,27 +47,21 @@ object CardinalSocialWelfareFunction {
   }
 
   /** Rawlsian social welfare function: society should maximize the minimum individual Numeraire. */
-  def min[CC <: Iterable[ValuationFunction[A]], A]
-         : CardinalSocialWelfareFunction[CC, A] = {
-    new CardinalSocialWelfareFunction[CC, A] {
-      def apply(preferences: CC): ValuationFunction[A] = {
-        new ValuationFunction[A] {
-          def apply(a: A): Numeraire = {
-            preferences.reduce(ValuationFunction.min[A].combine)(a)
-          }
-        }
-      }
-    }
+  def min[A]: CardinalSocialWelfareFunction[Iterable[ValuationFunction[A]], A] = {
+    reduce(ValuationFunction.min)
   }
 
   /** Nash bargaining maximizes the produce of individual utilities. */
-  def product[CC <: Iterable[ValuationFunction[A]], A]
-             : CardinalSocialWelfareFunction[CC, A] = {
-    new CardinalSocialWelfareFunction[CC, A] {
-      def apply(preferences: CC): ValuationFunction[A] = {
+  def prod[A]: CardinalSocialWelfareFunction[Iterable[ValuationFunction[A]], A] = {
+    reduce(ValuationFunction.prod)
+  }
+
+  def reduce[A](implicit ev: Semigroup[ValuationFunction[A]]): CardinalSocialWelfareFunction[Iterable[ValuationFunction[A]], A] = {
+    new CardinalSocialWelfareFunction[Iterable[ValuationFunction[A]], A] {
+      def apply(preferences: Iterable[ValuationFunction[A]]): ValuationFunction[A] = {
         new ValuationFunction[A] {
           def apply(a: A): Numeraire = {
-            preferences.reduce(ValuationFunction.prod[A].combine)(a)
+            preferences.reduce(ev.combine)(a)
           }
         }
       }
@@ -76,17 +69,8 @@ object CardinalSocialWelfareFunction {
   }
 
   /** Benthamite social welfare function: society should maximize the sum of individual Numeraire. */
-  def sum[CC <: Iterable[ValuationFunction[A]], A]
-         : CardinalSocialWelfareFunction[CC, A]  = {
-    new CardinalSocialWelfareFunction[CC, A] {
-      def apply(preferences: CC): ValuationFunction[A] = {
-        new ValuationFunction[A] {
-          def apply(a: A): Numeraire = {
-            preferences.reduce(ValuationFunction.sum[A].combine)(a)
-          }
-        }
-      }
-    }
+  def sum[A]: CardinalSocialWelfareFunction[Iterable[ValuationFunction[A]], A]  = {
+    reduce(ValuationFunction.sum)
   }
 
 }
