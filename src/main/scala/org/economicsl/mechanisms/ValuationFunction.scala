@@ -88,6 +88,14 @@ object ValuationFunction {
     }
   }
 
+  def particular[A](alernative: A)(implicit ev: ValuationFunction[A]): ValuationFunction[A] = {
+    new Valuation[A] {
+      def apply(a: A): Numeraire = {
+        if (a == alternative) ev(a) else 0L
+      }
+    }
+  }
+
   def semigroup[A](implicit ev: Semigroup[A => Numeraire]): Semigroup[ValuationFunction[A]] = {
     new Semigroup[ValuationFunction[A]] {
       def combine(v1: ValuationFunction[A], v2: ValuationFunction[A]): ValuationFunction[A] = {
